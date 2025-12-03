@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC谐振频率计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .input-group {
+            transition: all 0.3s ease;
+        }
+        .input-group:focus-within {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .result-highlight {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.9;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">LC谐振频率计算器</h1>
+            <p class="text-gray-600">计算LC并联电路的谐振频率</p>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="grid gap-8">
+            <!-- 电容配置区域 -->
+            <section class="bg-white rounded-xl p-6 card">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">电容配置 (并联)</h2>
+                    <button id="add-capacitor" 
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                            disabled>
+                        添加电容
+                    </button>
+                </div>
+                
+                <div id="capacitors-container" class="space-y-4">
+                    <!-- 第一个电容将通过JavaScript动态生成 -->
+                </div>
+            </section>
+
+            <!-- 电感配置区域 -->
+            <section class="bg-white rounded-xl p-6 card">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">电感配置</h2>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="input-group p-3 border border-gray-200 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">预设电感值</label>
+                        <select id="inductor-preset" 
+                                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+                            <option value="0">自定义</option>
+                            <option value="1">1uH</option>
+                            <option value="2.2">2.2uH</option>
+                            <option value="3.3">3.3uH</option>
+                            <option value="4.7">4.7uH</option>
+                            <option value="5.6">5.6uH</option>
+                            <option value="6.8">6.8uH</option>
+                            <option value="10">10uH</option>
+                            <option value="22">22uH</option>
+                            <option value="33">33uH</option>
+                            <option value="47">47uH</option>
+                            <option value="56">56uH</option>
+                            <option value="68">68uH</option>
+                            <option value="100">100uH</option>
+                            <option value="220">220uH</option>
+                            <option value="330">330uH</option>
+                            <option value="470">470uH</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group p-3 border border-gray-200 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">自定义电感值</label>
+                        <div class="flex">
+                            <input type="number" id="inductor-custom" 
+                                   class="flex-1 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                   placeholder="输入电感值"
+                                   min="0.1"
+                                   step="0.1"
+                                   value="10">
+                            <select id="inductor-unit" 
+                                    class="p-2 border border-l-0 border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-gray-50">
+                                <option value="uH">uH</option>
+                                <option value="mH">mH</option>
+                                <option value="H">H</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 计算按钮 -->
+            <section class="flex justify-center">
+                <button id="calculate-btn" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg hover:shadow-xl">
+                    计算谐振频率
+                </button>
+            </section>
+
+            <!-- 结果显示区域 -->
+            <section id="results" class="bg-white rounded-xl p-6 card hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">计算结果</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">总电容值</p>
+                        <p id="total-capacitance" class="text-2xl font-bold text-blue-600">--</p>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-6 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">谐振频率</p>
+                        <p id="resonant-frequency" class="text-3xl font-bold text-purple-600 result-highlight">--</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>公式: f = 1/(2π√(L*C))</p>
+        </footer>
+    </div>
+
+    <script>
+        // 电容预设值 (E12系列)
+        const capacitorPresets = [
+            { value: 0, label: '自定义' },
+            { value: 1, label: '1pF' },
+            { value: 1.2, label: '1.2pF' },
+            { value: 1.5, label: '1.5pF' },
+            { value: 1.8, label: '1.8pF' },
+            { value: 2.2, label: '2.2pF' },
+            { value: 2.7, label: '2.7pF' },
+            { value: 3.3, label: '3.3pF' },
+            { value: 3.9, label: '3.9pF' },
+            { value: 4.7, label: '4.7pF' },
+            { value: 5.6, label: '5.6pF' },
+            { value: 6.8, label: '6.8pF' },
+            { value: 8.2, label: '8.2pF' },
+            { value: 10, label: '10pF' },
+            { value: 12, label: '12pF' },
+            { value: 15, label: '15pF' },
+            { value: 18, label: '18pF' },
+            { value: 22, label: '22pF' },
+            { value: 27, label: '27pF' },
+            { value: 33, label: '33pF' },
+            { value: 39, label: '39pF' },
+            { value: 47, label: '47pF' },
+            { value: 56, label: '56pF' },
+            { value: 68, label: '68pF' },
+            { value: 82, label: '82pF' },
+            { value: 100, label: '100pF' },
+            { value: 120, label: '120pF' },
+            { value: 150, label: '150pF' },
+            { value: 180, label: '180pF' },
+            { value: 220, label: '220pF' },
+            { value: 270, label: '270pF' },
+            { value: 330, label: '330pF' },
+            { value: 390, label: '390pF' },
+            { value: 470, label: '470pF' },
+            { value: 560, label: '560pF' },
+            { value: 680, label: '680pF' },
+            { value: 820, label: '820pF' },
+            { value: 1000, label: '1nF' },
+            { value: 1200, label: '1.2nF' },
+            { value: 1500, label: '1.5nF' },
+            { value: 1800, label: '1.8nF' },
+            { value: 2200, label: '2.2nF' },
+            { value: 2700, label: '2.7nF' },
+            { value: 3300, label: '3.3nF' },
+            { value: 3900, label: '3.9nF' },
+            { value: 4700, label: '4.7nF' },
+            { value: 5600, label: '5.6nF' },
+            { value: 6800, label: '6.8nF' },
+            { value: 8200, label: '8.2nF' },
+            { value: 10000, label: '10nF' },
+            { value: 12000, label: '12nF' },
+            { value: 15000, label: '15nF' },
+            { value: 18000, label: '18nF' },
+            { value: 22000, label: '22nF' },
+            { value: 27000, label: '27nF' },
+            { value: 33000, label: '33nF' },
+            { value: 39000, label: '39nF' },
+            { value: 47000, label: '47nF' },
+            { value: 56000, label: '56nF' },
+            { value: 68000, label: '68nF' },
+            { value: 82000, label: '82nF' },
+            { value: 100000, label: '100nF' },
+            { value: 220000, label: '220nF' },
+            { value: 470000, label: '470nF' },
+            { value: 1000000, label: '1uF' }
+        ];
+
+        // 单位换算
+        const unitMultipliers = {
+            'pF': 1e-12,
+            'nF': 1e-9,
+            'uF': 1e-6,
+            'mF': 1e-3,
+            'F': 1,
+            'nH': 1e-9,
+            'uH': 1e-6,
+            'mH': 1e-3,
+            'H': 1
+        };
+
+        let capacitorCount = 0;
+        const maxCapacitors = 4;
+
+        // 生成电容HTML
+        function generateCapacitorHTML(index) {
+            return `
+                <div id="capacitor-${index}" class="input-group p-4 border border-gray-200 rounded-lg relative">
+                    ${index > 0 ? `<button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 delete-capacitor" data-index="${index}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>` : ''}
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">电容 ${index + 1}</label>
+                            <select id="capacitor-${index}-preset" 
+                                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                    data-index="${index}">
+                                ${capacitorPresets.map(preset => 
+                                    `<option value="${preset.value}">${preset.label}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">自定义值</label>
+                            <input type="number" id="capacitor-${index}-value" 
+                                   class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                   placeholder="输入电容值"
+                                   min="0.1"
+                                   step="0.1"
+                                   value="100"
+                                   data-index="${index}">
+                        </div>
+                        
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">单位</label>
+                            <select id="capacitor-${index}-unit" 
+                                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                                    data-index="${index}">
+                                <option value="pF">pF</option>
+                                <option value="nF">nF</option>
+                                <option value="uF">uF</option>
+                                <option value="mF">mF</option>
+                                <option value="F">F</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 添加电容
+        function addCapacitor() {
+            if (capacitorCount < maxCapacitors) {
+                const container = document.getElementById('capacitors-container');
+                const capacitorHTML = generateCapacitorHTML(capacitorCount);
+                container.innerHTML += capacitorHTML;
+                
+                capacitorCount++;
+                
+                // 更新添加按钮状态
+                updateAddButtonStatus();
+                
+                // 添加事件监听器
+                attachEventListeners();
+            }
+        }
+
+        // 删除电容
+        function deleteCapacitor(index) {
+            if (capacitorCount > 1 && confirm('确定要删除这个电容吗？')) {
+                const capacitorElement = document.getElementById(`capacitor-${index}`);
+                capacitorElement.remove();
+                
+                capacitorCount--;
+                
+                // 更新添加按钮状态
+                updateAddButtonStatus();
+                
+                // 重新索引电容
+                reindexCapacitors();
+            }
+        }
+
+        // 重新索引电容
+        function reindexCapacitors() {
+            const container = document.getElementById('capacitors-container');
+            const capacitors = container.querySelectorAll('[id^="capacitor-"]');
+            
+            // 清空容器
+            container.innerHTML = '';
+            
+            // 重新生成所有电容
+            for (let i = 0; i < capacitorCount; i++) {
+                container.innerHTML += generateCapacitorHTML(i);
+            }
+            
+            // 重新添加事件监听器
+            attachEventListeners();
+        }
+
+        // 更新添加按钮状态
+        function updateAddButtonStatus() {
+            const addButton = document.getElementById('add-capacitor');
+            addButton.disabled = capacitorCount >= maxCapacitors;
+        }
+
+        // 附加事件监听器
+        function attachEventListeners() {
+            // 预设电容选择事件 - 使用新的事件委托方式避免重复添加
+            const container = document.getElementById('capacitors-container');
+            if (container) {
+                // 移除旧的事件监听器
+                container.removeEventListener('change', handlePresetChange);
+                // 添加新的事件监听器
+                container.addEventListener('change', handlePresetChange);
+            }
+
+            // 电感预设选择事件 - 只添加一次
+            const inductorPreset = document.getElementById('inductor-preset');
+            if (inductorPreset) {
+                // 移除旧的事件监听器
+                inductorPreset.removeEventListener('change', handleInductorPresetChange);
+                // 添加新的事件监听器
+                inductorPreset.addEventListener('change', handleInductorPresetChange);
+            }
+
+            // 删除电容事件 - 使用新的事件委托方式避免重复添加
+            if (container) {
+                // 移除旧的事件监听器
+                container.removeEventListener('click', handleDeleteCapacitor);
+                // 添加新的事件监听器
+                container.addEventListener('click', handleDeleteCapacitor);
+            }
+
+            // 计算按钮事件 - 只添加一次
+            const calculateBtn = document.getElementById('calculate-btn');
+            if (calculateBtn) {
+                // 移除旧的事件监听器
+                calculateBtn.removeEventListener('click', calculateResonantFrequency);
+                // 添加新的事件监听器
+                calculateBtn.addEventListener('click', calculateResonantFrequency);
+            }
+        }
+
+        // 使用事件委托处理电容预设选择
+        function handlePresetChange(e) {
+            if (e.target && e.target.id && e.target.id.startsWith('capacitor-') && e.target.id.endsWith('-preset')) {
+                const index = parseInt(e.target.dataset.index);
+                const value = parseFloat(e.target.value);
+                const customInput = document.getElementById(`capacitor-${index}-value`);
+                const unitSelect = document.getElementById(`capacitor-${index}-unit`);
+                
+                if (value > 0) {
+                    // 设置自定义输入值（根据预设值自动选择单位）
+                    if (value < 1000) {
+                        customInput.value = value;
+                        unitSelect.value = 'pF';
+                    } else if (value < 1000000) {
+                        customInput.value = value / 1000;
+                        unitSelect.value = 'nF';
+                    } else {
+                        customInput.value = value / 1000000;
+                        unitSelect.value = 'uF';
+                    }
+                    
+                    customInput.disabled = true;
+                    unitSelect.disabled = true;
+                } else {
+                    customInput.disabled = false;
+                    unitSelect.disabled = false;
+                }
+            }
+        }
+
+        // 使用事件委托处理删除电容
+        function handleDeleteCapacitor(e) {
+            if (e.target && e.target.closest && e.target.closest('.delete-capacitor')) {
+                const deleteBtn = e.target.closest('.delete-capacitor');
+                const index = parseInt(deleteBtn.dataset.index);
+                deleteCapacitor(index);
+            }
+        }
+
+
+
+        // 处理电感预设选择
+        function handleInductorPresetChange(event) {
+            const value = parseFloat(this.value);
+            const customInput = document.getElementById('inductor-custom');
+            
+            if (value > 0) {
+                customInput.value = value;
+                customInput.disabled = true;
+            } else {
+                customInput.disabled = false;
+            }
+        }
+
+        // 计算总电容值 (法拉)
+        function calculateTotalCapacitance() {
+            let total = 0;
+            
+            for (let i = 0; i < capacitorCount; i++) {
+                const presetSelect = document.getElementById(`capacitor-${i}-preset`);
+                const customInput = document.getElementById(`capacitor-${i}-value`);
+                const unitSelect = document.getElementById(`capacitor-${i}-unit`);
+                
+                let capacitance;
+                
+                if (parseFloat(presetSelect.value) > 0) {
+                    // 使用预设值
+                    capacitance = parseFloat(presetSelect.value) * 1e-12; // 预设值都是pF
+                } else {
+                    // 使用自定义值
+                    const value = parseFloat(customInput.value);
+                    const unit = unitSelect.value;
+                    capacitance = value * unitMultipliers[unit];
+                }
+                
+                total += capacitance;
+            }
+            
+            return total;
+        }
+
+        // 计算电感值 (亨利)
+        function getInductance() {
+            const presetSelect = document.getElementById('inductor-preset');
+            const customInput = document.getElementById('inductor-custom');
+            const unitSelect = document.getElementById('inductor-unit');
+            
+            let inductance;
+            
+            if (parseFloat(presetSelect.value) > 0) {
+                // 使用预设值 (预设值都是uH)
+                inductance = parseFloat(presetSelect.value) * 1e-6;
+            } else {
+                // 使用自定义值
+                const value = parseFloat(customInput.value);
+                const unit = unitSelect.value;
+                inductance = value * unitMultipliers[unit];
+            }
+            
+            return inductance;
+        }
+
+        // 格式化数值和单位
+        function formatValue(value, type) {
+            if (type === 'capacitance') {
+                if (value >= 1) {
+                    return `${value.toFixed(6)} F`;
+                } else if (value >= 1e-3) {
+                    return `${(value * 1e3).toFixed(3)} mF`;
+                } else if (value >= 1e-6) {
+                    return `${(value * 1e6).toFixed(3)} uF`;
+                } else if (value >= 1e-9) {
+                    return `${(value * 1e9).toFixed(3)} nF`;
+                } else {
+                    return `${(value * 1e12).toFixed(3)} pF`;
+                }
+            } else if (type === 'frequency') {
+                if (value >= 1e6) {
+                    return `${(value / 1e6).toFixed(3)} MHz`;
+                } else if (value >= 1e3) {
+                    return `${(value / 1e3).toFixed(3)} kHz`;
+                } else {
+                    return `${value.toFixed(3)} Hz`;
+                }
+            }
+        }
+
+        // 计算谐振频率
+        function calculateResonantFrequency() {
+            try {
+                // 计算总电容
+                const totalCapacitance = calculateTotalCapacitance();
+                
+                // 获取电感值
+                const inductance = getInductance();
+                
+                // 计算谐振频率
+                const frequency = 1 / (2 * Math.PI * Math.sqrt(inductance * totalCapacitance));
+                
+                // 显示结果
+                document.getElementById('total-capacitance').textContent = formatValue(totalCapacitance, 'capacitance');
+                document.getElementById('resonant-frequency').textContent = formatValue(frequency, 'frequency');
+                
+                // 显示结果区域
+                document.getElementById('results').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('计算错误:', error);
+                alert('计算错误，请检查输入值是否有效。');
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加第一个电容
+            addCapacitor();
+            
+            // 启用添加按钮
+            const addButton = document.getElementById('add-capacitor');
+            addButton.disabled = false;
+            addButton.addEventListener('click', addCapacitor);
+            
+            // 附加一次性事件监听器
+            attachEventListeners();
+        });
+    </script>
+</body>
+</html>
