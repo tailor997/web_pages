@@ -1,0 +1,43 @@
+{
+  "name": "web_pages_motion2048",
+  "version": "1.0.0",
+  "description": "2048 game with head movement control",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tailor997/web_pages.git"
+  },
+  "keywords": [
+    "2048",
+    "typescript",
+    "mediapipe",
+    "headpose",
+    "game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tailor997/web_pages/issues"
+  },
+  "homepage": "https://github.com/tailor997/web_pages#readme",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/three": "^0.181.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.9",
+    "postprocessing": "^6.34.1",
+    "three": "^0.160.0"
+  }
+}

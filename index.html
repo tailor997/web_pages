@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion 2048 - Head Controlled Game</title>
+    <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body class="bg-dark-bg text-dark-on-surface font-pixel">
+    <div class="container mx-auto p-4 h-screen flex flex-col lg:flex-row gap-4">
+        <!-- 左侧：摄像头和控制区域 -->
+        <div class="lg:w-2/5 bg-dark-surface rounded-lg p-4 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-dark-primary">Motion 2048</h1>
+                <div class="flex items-center gap-2">
+                    <span id="status-text" class="text-sm">Loading...</span>
+                    <div id="status-indicator" class="status-indicator status-inactive"></div>
+                </div>
+            </div>
+            
+            <!-- 摄像头预览 -->
+            <div class="flex-1 bg-dark-bg rounded-lg overflow-hidden relative">
+                <video id="camera-feed" class="camera-feed w-full h-full object-cover" autoplay playsinline></video>
+                <canvas id="face-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+            </div>
+            
+            <!-- 方向识别结果 -->
+            <div class="bg-dark-bg rounded-lg p-4">
+                <h2 class="text-lg font-bold mb-2">Head Direction</h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-start-2 text-center">
+                        <div id="direction-up" class="direction-indicator direction-inactive">↑</div>
+                        <span class="text-xs">Up</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div id="direction-left" class="direction-indicator direction-inactive">←</div>
+                            <span class="text-xs">Left</span>
+                        </div>
+                        <div>
+                            <div id="direction-right" class="direction-indicator direction-inactive">→</div>
+                            <span class="text-xs">Right</span>
+                        </div>
+                    </div>
+                    <div class="col-start-2 text-center">
+                        <div id="direction-down" class="direction-indicator direction-inactive">↓</div>
+                        <span class="text-xs">Down</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <span id="current-direction" class="text-lg font-bold text-dark-secondary">Forward</span>
+                </div>
+            </div>
+            
+            <!-- 实时监控面板 -->
+            <div class="bg-dark-bg rounded-lg p-4 overflow-auto max-h-40">
+                <h2 class="text-lg font-bold mb-2">Real-time Monitoring</h2>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <!-- 头部姿态数据 -->
+                    <div>
+                        <h3 class="font-bold mb-1">Head Pose</h3>
+                        <div class="space-y-1">
+                            <div>
+                                <span class="text-gray-400">Pitch:</span>
+                                <span id="pose-pitch" class="ml-2">0.00°</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Yaw:</span>
+                                <span id="pose-yaw" class="ml-2">0.00°</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Roll:</span>
+                                <span id="pose-roll" class="ml-2">0.00°</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 方向识别数据 -->
+                    <div>
+                        <h3 class="font-bold mb-1">Direction Detection</h3>
+                        <div class="space-y-1">
+                            <div>
+                                <span class="text-gray-400">Raw:</span>
+                                <span id="direction-raw" class="ml-2">none</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Stabilized:</span>
+                                <span id="direction-stabilized" class="ml-2">none</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Threshold:</span>
+                                <span id="direction-threshold" class="ml-2">p:15, y:12</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 状态日志 -->
+                <div class="mt-3">
+                    <h3 class="font-bold mb-1">Status Log</h3>
+                    <div id="status-log" class="text-xs text-gray-400 h-12 overflow-y-auto">
+                        <div>Initializing...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 控制设置 -->
+            <div class="bg-dark-bg rounded-lg p-4">
+                <h2 class="text-lg font-bold mb-2">Settings</h2>
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Sensitivity</label>
+                    <input type="range" id="sensitivity-slider" min="1" max="10" value="5" class="w-full">
+                    <div class="flex justify-between text-xs mt-1">
+                        <span>Low</span>
+                        <span>High</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="undo-btn" class="bg-dark-primary hover:bg-opacity-80 text-white py-2 px-4 rounded-md transition-colors" disabled>Undo</button>
+                    <button id="pause-btn" class="bg-dark-primary hover:bg-opacity-80 text-white py-2 px-4 rounded-md transition-colors">Pause</button>
+                    <button id="restart-btn" class="bg-dark-secondary hover:bg-opacity-80 text-dark-bg py-2 px-4 rounded-md transition-colors">Restart</button>
+                </div>
+                <div class="mt-2 text-xs text-center text-gray-500">
+                    <span id="undo-info">Undo: 0/7</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：游戏区域 -->
+        <div class="lg:w-3/5 bg-dark-surface rounded-lg p-4 flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold">2048 Game</h2>
+                    <p class="text-sm text-gray-400">Control with head movements</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm">Score</div>
+                    <div id="score" class="text-3xl font-bold text-dark-primary">0</div>
+                </div>
+            </div>
+            
+            <!-- 游戏说明 -->
+            <div class="bg-dark-bg rounded-lg p-4 mb-4">
+                <h3 class="font-bold mb-2">How to Play</h3>
+                <ul class="text-sm space-y-1">
+                    <li>• Look up to move tiles up</li>
+                    <li>• Look down to move tiles down</li>
+                    <li>• Look left to move tiles left</li>
+                    <li>• Look right to move tiles right</li>
+                    <li>• Merge tiles to reach 2048!</li>
+                </ul>
+            </div>
+            
+            <!-- 游戏板 -->
+            <div class="flex-1 flex items-center justify-center">
+                <div id="game-container" class="w-full max-w-md aspect-square grid grid-cols-4 gap-4 p-4 bg-dark-bg rounded-lg">
+                    <!-- 游戏格子将通过 JavaScript 动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 键盘控制提示 -->
+            <div class="mt-4 text-center text-xs text-gray-500">
+                <p>Keyboard Controls: Arrow Keys or WASD</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 游戏结束模态框 -->
+    <div id="game-over-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-surface rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 id="game-over-title" class="text-2xl font-bold mb-4 text-center">Game Over</h2>
+            <p id="game-over-message" class="text-center mb-6">You reached <span id="final-score" class="font-bold text-dark-primary">0</span> points!</p>
+            <div class="flex justify-center gap-4">
+                <button id="play-again-btn" class="bg-dark-primary hover:bg-opacity-80 text-white py-2 px-6 rounded-md transition-colors">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Postprocessing.js Canvas -->
+    <canvas id="postprocessing-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-10"></canvas>
+    
+    <!-- 引入主脚本 -->
+    <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

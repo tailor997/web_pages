@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-dark-bg text-dark-on-surface font-pixel;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-surface;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-primary rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-opacity-80;
+}
+
+/* 2048 游戏格子样式 */
+.game-cell {
+  @apply rounded-md flex items-center justify-center font-bold text-xl transition-all duration-200;
+}
+
+.game-cell-2 {
+  @apply bg-blue-100 text-blue-900;
+}
+
+.game-cell-4 {
+  @apply bg-blue-200 text-blue-900;
+}
+
+.game-cell-8 {
+  @apply bg-yellow-200 text-white;
+}
+
+.game-cell-16 {
+  @apply bg-yellow-300 text-white;
+}
+
+.game-cell-32 {
+  @apply bg-yellow-400 text-white;
+}
+
+.game-cell-64 {
+  @apply bg-orange-500 text-white;
+}
+
+.game-cell-128 {
+  @apply bg-orange-600 text-white;
+}
+
+.game-cell-256 {
+  @apply bg-orange-700 text-white;
+}
+
+.game-cell-512 {
+  @apply bg-red-500 text-white;
+}
+
+.game-cell-1024 {
+  @apply bg-red-600 text-white;
+}
+
+.game-cell-2048 {
+  @apply bg-red-700 text-white;
+}
+
+/* 摄像头预览框样式 */
+.camera-feed {
+  @apply rounded-lg overflow-hidden border-2 border-dark-primary;
+  transform: scaleX(-1); /* 镜像翻转，更自然的体验 */
+}
+
+/* 状态指示器样式 */
+.status-indicator {
+  @apply w-4 h-4 rounded-full transition-all duration-300;
+}
+
+.status-active {
+  @apply bg-green-500;
+}
+
+.status-inactive {
+  @apply bg-red-500;
+}
+
+/* 方向指示器样式 */
+.direction-indicator {
+  @apply text-2xl font-bold transition-all duration-200;
+}
+
+.direction-active {
+  @apply text-dark-primary scale-110;
+}
+
+.direction-inactive {
+  @apply text-gray-500 scale-100;
+}
