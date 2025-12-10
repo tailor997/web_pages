@@ -133,13 +133,13 @@ body {
     content: "😂";
 }
 
-/* 四角装饰的emoji内容 */
+/* 四角装饰的emoji内容 - 喜怒哀乐 */
 .corner.top-left::after {
-    content: "😂";
+    content: "😄";
 }
 
 .corner.top-right::after {
-    content: "😢";
+    content: "😠";
 }
 
 .corner.bottom-left::after {
@@ -147,7 +147,7 @@ body {
 }
 
 .corner.bottom-right::after {
-    content: "😂";
+    content: "😆";
 }
 
 /* 四角emoji的动画 */
@@ -170,6 +170,46 @@ body {
     padding: 0;
     margin: 0;
     transition: all 0.3s ease;
+}
+
+/* Emoji数量统计 */
+.emoji-stats {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(59, 76, 202, 0.8);
+    border: 3px solid #ffde00;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffde00;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.stat-label {
+    color: #ffde00;
+}
+
+.stat-value {
+    color: #ffffff;
+    background: rgba(10, 61, 98, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid #ffde00;
+    min-width: 40px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 #emojiCanvas {

@@ -47,7 +47,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
-                    已收集列表
+                    收集列表
                 </button>
                 <button id="rightBtn" class="gesture-btn right">
                     下一个
@@ -61,7 +61,7 @@
         <!-- 已出现Emoji汇总列表 -->
         <div class="history-panel" id="historyPanel">
             <div class="history-header">
-                <h2>已收集的Emoji</h2>
+                <h2>收集列表</h2>
                 <button id="closeHistory" class="close-btn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -69,6 +69,15 @@
                     </svg>
                 </button>
             </div>
+            
+            <!-- Emoji数量统计 -->
+            <div class="emoji-stats">
+                <div class="stat-item">
+                    <span class="stat-label">已收集：</span>
+                    <span class="stat-value" id="collectedEmojis">0</span>
+                </div>
+            </div>
+            
             <div class="history-list" id="historyList"></div>
         </div>
         

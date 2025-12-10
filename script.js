@@ -2,24 +2,36 @@
 class EmojiGame {
     constructor() {
         // 初始化游戏数据
-        // 仅保留食物和动物类别的Emoji
+        // 包含动物、食物、交通工具和物品类别的Emoji
         this.emojis = [
             // 动物类
-            '�', '�', '�', '🐹', '�', '�', '�', '�', '�', '🐯',
-            '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🐣',
-            '�', '🦆', '🦅', '🦉', '🦇', '�', '�', '🐴', '�', '🐝',
-            '🐛', '�', '🐌', '🐞', '🐜', '🕷️', '�', '�', '�', '🦎',
-            '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟',
-            '🐬', '🐳', '�', '🦈', '�', '�', '�', '�', '�', '🦧',
+            '🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
+            '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥',
+            '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛',
+            '🦋', '🐌', '🐞', '🐜', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖',
+            '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬',
+            '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘',
             // 食物类
-            '🍎', '�', '🍊', '🍋', '🍌', '�', '🍇', '🍓', '�', '�',
+            '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒',
             '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬',
             '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠',
             '🥐', '🥖', '🍞', '🥨', '🥯', '🧀', '🥚', '🍳', '🧈', '🥞',
             '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕',
             '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫',
-            '�', '�', '🍲', '�', '�', '�', '�', '🦪', '🍤', '🍙',
-            '🍚', '🍘', '�', '�', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦'
+            '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙',
+            '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦',
+            // 交通工具类
+            '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐',
+            '🚚', '🚛', '🚜', '🚲', '🛵', '🏍️', '🛺', '🚨', '🚔', '🚍',
+            '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄',
+            '🚅', '🚆', '🚇', '🚈', '🚂', '🚀', '✈️', '🛫', '🛬', '🛩️',
+            '💺', '🛰️', '🛸', '🚁', '🛶', '🚤', '🛳️', '⛵', '🚢', '🛥️',
+            // 物品类
+            '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️',
+            '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️',
+            '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️',
+            '🧭', '⏰', '⏲️', '⏱️', '🕰️', '⏳', '⌛', '📡', '🔋', '🔌',
+            '💡', '🔦', '🕯️', '🪔', '🏮', '🪩', '✨', '⭐', '🌟', '💫'
         ];
         
         this.fireworkEmojis = ['🎆', '✨', '🎇', '💫', '⭐', '🌟'];
@@ -47,6 +59,11 @@ class EmojiGame {
         this.historyList = document.getElementById('historyList');
         this.closeHistory = document.getElementById('closeHistory');
         this.animationContainer = document.getElementById('animationContainer');
+        
+        // 统计相关DOM元素
+        this.totalEmojisElement = document.getElementById('totalEmojis');
+        this.shownEmojisElement = document.getElementById('shownEmojis');
+        this.collectedEmojisElement = document.getElementById('collectedEmojis');
         
         // 手势检测变量
         this.startX = 0;
@@ -77,6 +94,9 @@ class EmojiGame {
         
         // 开始游戏 - 必须在availableEmojis初始化之后调用
         this.nextEmoji();
+        
+        // 初始化统计信息
+        this.updateStats();
     }
     
     // 调整Canvas尺寸以适应设备
@@ -246,7 +266,16 @@ class EmojiGame {
     // 过滤掉不支持的Emoji
     filterUnsupportedEmojis() {
         const originalCount = this.emojis.length;
+        
+        // 1. 过滤不支持的Emoji
         this.emojis = this.emojis.filter(emoji => this.isEmojiSupported(emoji));
+        
+        // 2. 过滤轮廓相同的Emoji（纯圆形、纯方形等）
+        this.emojis = this.filterSimilarOutlines(this.emojis);
+        
+        // 3. 确保跨平台支持，只保留主流平台都支持的Emoji
+        this.emojis = this.filterCrossPlatformEmojis(this.emojis);
+        
         const filteredCount = this.emojis.length;
         
         console.log(`Emoji过滤完成: 原数量 ${originalCount}, 过滤后数量 ${filteredCount}`);
@@ -256,6 +285,47 @@ class EmojiGame {
             console.warn('所有Emoji都被过滤掉，使用默认常用Emoji列表');
             this.emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🍎', '🍌', '🍊', '🍋', '🍒'];
         }
+    }
+    
+    // 过滤轮廓相同的Emoji
+    filterSimilarOutlines(emojis) {
+        // 定义需要过滤的轮廓相似的Emoji（主要是纯圆形、纯方形等简单轮廓）
+        const similarOutlineEmojis = [
+            '🔵', '🔴', '🟢', '🟡', '🟠', '🟣', '⚫', '⚪',
+            '🟤', '🔶', '🔷', '🔸', '🔹', '🔺', '🔻', '▫️',
+            '◾', '◽', '◼️', '◻️', '▪️', '▫️', '🔘', '🔳',
+            '🔲', '🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '🟫'
+        ];
+        
+        // 过滤掉轮廓相似的Emoji，只保留具有独特轮廓的Emoji
+        return emojis.filter(emoji => !similarOutlineEmojis.includes(emoji));
+    }
+    
+    // 确保跨平台支持，只保留主流平台都支持的Emoji
+    filterCrossPlatformEmojis(emojis) {
+        // 定义主流平台（iOS、Android、Windows、macOS）都支持的Emoji列表
+        // 这些Emoji是所有主流平台都支持的，确保跨平台兼容性
+        const crossPlatformEmojis = [
+            // 动物类
+            '🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
+            '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥',
+            '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛',
+            '🦋', '🐌', '🐞', '🐜', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖',
+            '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬',
+            '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘',
+            // 食物类
+            '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒',
+            '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬',
+            '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠',
+            '🥐', '🥖', '🍞', '🥨', '🥯', '🧀', '🥚', '🍳', '🧈', '🥞',
+            '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕',
+            '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫',
+            '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙',
+            '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦'
+        ];
+        
+        // 只保留在crossPlatformEmojis列表中的Emoji
+        return emojis.filter(emoji => crossPlatformEmojis.includes(emoji));
     }
     
     // 绘制Emoji轮廓
@@ -457,6 +527,9 @@ class EmojiGame {
             setTimeout(() => {
                 this.canvas.classList.remove('fade-in');
             }, 300);
+            
+            // 更新统计信息
+            this.updateStats();
         }, 300);
     }
     
@@ -502,6 +575,27 @@ class EmojiGame {
         this.showFireworks();
     }
     
+    // 更新统计信息
+    updateStats() {
+        // 总Emoji数量
+        const totalEmojis = this.emojis.length;
+        // 已显示数量
+        const shownEmojis = this.usedEmojis.length;
+        // 已收集数量
+        const collectedEmojis = Object.values(this.guessedStatus).filter(status => status === true).length;
+        
+        // 更新DOM元素
+        if (this.totalEmojisElement) {
+            this.totalEmojisElement.textContent = totalEmojis;
+        }
+        if (this.shownEmojisElement) {
+            this.shownEmojisElement.textContent = shownEmojis;
+        }
+        if (this.collectedEmojisElement) {
+            this.collectedEmojisElement.textContent = collectedEmojis;
+        }
+    }
+    
     // 检查用户输入
     checkInput() {
         const userInput = this.emojiInput.value.trim();
@@ -515,6 +609,8 @@ class EmojiGame {
             this.canvas.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.5)';
             // 显示原Emoji图片
             this.drawEmojiOutline(this.currentEmoji, true);
+            // 更新统计信息
+            this.updateStats();
         } else {
             // 匹配失败
             this.showPoop();
@@ -691,13 +787,16 @@ class EmojiGame {
             
             historyItem.appendChild(miniCanvas);
             
+            // 保存当前颜色信息到元素上，以便点击时使用
+            historyItem.dataset.color = bgColor;
+            
             // 添加点击事件，未猜对的项目可以继续猜谜
             historyItem.addEventListener('click', () => {
                 if (!this.guessedStatus[emoji]) {
-                    // 切换到该Emoji继续猜谜，使用当时的颜色
+                    // 切换到该Emoji继续猜谜
                     this.currentEmoji = emoji;
-                    // 保存当时的颜色为当前颜色
-                    this.currentBgColor = emojiItem.color;
+                    // 从元素上获取保存的颜色
+                    this.currentBgColor = historyItem.dataset.color;
                     
                     // 更新所有相关元素的背景色
                     const pokemonFrame = document.querySelector('.pokemon-frame');
@@ -712,6 +811,10 @@ class EmojiGame {
                     if (emojiCanvas) {
                         emojiCanvas.style.backgroundColor = this.currentBgColor;
                     }
+                    
+                    // 重置Canvas样式
+                    this.canvas.style.borderColor = '#ffffff';
+                    this.canvas.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.3)';
                     
                     // 绘制Emoji
                     this.drawEmojiOutline(emoji);
