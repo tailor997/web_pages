@@ -3,22 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji识别游戏</title>
+    <title>我是谁-Emoji</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
+        <!-- 标题区域 -->
+        <div class="title-area">
+            <h1 class="pokemon-title">我是谁-Emoji</h1>
+            <div class="question-marks">
+                <span class="question-mark">?</span>
+                <span class="question-mark">?</span>
+                <span class="question-mark">?</span>
+                <span class="question-mark">?</span>
+            </div>
+        </div>
+        
         <!-- 游戏主区域 -->
         <div class="game-area">
-            <!-- Emoji轮廓显示区域 -->
-            <div class="emoji-container">
-                <canvas id="emojiCanvas" width="200" height="200"></canvas>
+            <!-- 宝可梦风格框架 -->
+            <div class="pokemon-frame">
+                <!-- 四角装饰 -->
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+                
+                <!-- Emoji轮廓显示区域 -->
+                <div class="emoji-container">
+                    <canvas id="emojiCanvas" width="200" height="200"></canvas>
+                </div>
             </div>
             
             <!-- 用户输入区域 -->
             <div class="input-area">
-                <input type="text" id="emojiInput" placeholder="输入对应的Emoji" maxlength="2">
-                <button id="submitBtn">提交</button>
+                <input type="text" id="emojiInput" placeholder="输入Emoji" maxlength="2">
+                <button id="submitBtn">收集</button>
             </div>
             
             <!-- 手势按钮 -->
@@ -27,7 +47,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
-                    已出现列表
+                    已收集列表
                 </button>
                 <button id="rightBtn" class="gesture-btn right">
                     下一个
@@ -41,7 +61,7 @@
         <!-- 已出现Emoji汇总列表 -->
         <div class="history-panel" id="historyPanel">
             <div class="history-header">
-                <h2>已出现的Emoji</h2>
+                <h2>已收集的Emoji</h2>
                 <button id="closeHistory" class="close-btn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

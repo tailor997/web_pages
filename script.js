@@ -268,12 +268,9 @@ class EmojiGame {
         // 减小字体大小，确保完整显示
         const size = Math.min(canvas.width, canvas.height) * 0.75;
         
-        // 1. 绘制渐变背景
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#ff6b6b');
-        gradient.addColorStop(0.5, '#4ecdc4');
-        gradient.addColorStop(1, '#45b7d1');
-        ctx.fillStyle = gradient;
+        // 1. 绘制当前背景色，与宝可梦"我是谁"风格保持一致
+        const bgColor = this.currentBgColor || '#ffffff';
+        ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         if (showOriginal) {
@@ -294,7 +291,7 @@ class EmojiGame {
             offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
             
             // 设置文本样式，绘制白色Emoji
-            offscreenCtx.fillStyle = '#ffffff';
+            offscreenCtx.fillStyle = ctx.fillStyle;
             offscreenCtx.font = `${size}px sans-serif`;
             offscreenCtx.textAlign = 'center';
             offscreenCtx.textBaseline = 'middle';
@@ -306,18 +303,20 @@ class EmojiGame {
             const width = offscreenCanvas.width;
             const height = offscreenCanvas.height;
             
-            // 4. 遍历像素，非透明区域绘制纯色
+            // 4. 遍历像素，确保非透明区域外的所有区域颜色与currentBgColor一致
+            // 注意：canvas已经被填充为bgColor，所以透明区域会显示bgColor
+            // 只需要绘制非透明区域为黑色即可
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     const index = (y * width + x) * 4;
                     const alpha = data[index + 3];
                     
-                    // 如果是非透明像素（alpha > 0），绘制纯色
+                    // 如果是非透明像素（alpha > 0），绘制黑色纯色
                     if (alpha > 0) {
-                        // 绘制黑色纯色
                         ctx.fillStyle = '#000000';
                         ctx.fillRect(x, y, 1, 1);
                     }
+                    // 透明区域保持bgColor，无需额外处理
                 }
             }
         }
@@ -371,9 +370,9 @@ class EmojiGame {
     
     // 显示下一个Emoji
     nextEmoji() {
-        // 重置Canvas样式
-        this.canvas.style.borderColor = '#e0e0e0';
-        this.canvas.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+        // 重置Canvas样式为宝可梦风格
+        this.canvas.style.borderColor = '#ffffff';
+        this.canvas.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.3)';
         
         // 停止当前动画
         this.stopAnimation();
@@ -393,6 +392,37 @@ class EmojiGame {
             this.showAllEmojisCompleted();
             return;
         }
+        
+        // 宝可梦经典色系
+        const pokemonColors = [
+            '#ff6b6b', // 红色系
+            '#4ecdc4', // 绿色系
+            '#45b7d1', // 蓝色系
+            '#ffe66d', // 黄色系
+            '#f7b7a3', // 粉色系
+            '#a8e6cf', // 青色系
+            '#ffd3b6', // 橙色系
+            '#c7ceea'  // 紫色系
+        ];
+        
+        // 随机选择一种颜色
+        const randomColor = pokemonColors[Math.floor(Math.random() * pokemonColors.length)];
+        
+        // 保存当前颜色到实例属性，供drawEmojiOutline使用
+        this.currentBgColor = randomColor;
+        
+        // 更新Canvas相关区域颜色
+        // 1. 更新pokemon-frame背景色
+        const pokemonFrame = document.querySelector('.pokemon-frame');
+        pokemonFrame.style.backgroundColor = randomColor;
+        
+        // 2. 更新emoji-container背景色
+        const emojiContainer = document.querySelector('.emoji-container');
+        emojiContainer.style.backgroundColor = randomColor;
+        
+        // 3. 更新emojiCanvas背景色
+        const emojiCanvas = document.getElementById('emojiCanvas');
+        emojiCanvas.style.backgroundColor = randomColor;
         
         // 添加切换动画
         this.canvas.classList.add('slide-out-left');
@@ -446,16 +476,21 @@ class EmojiGame {
         // 清空Canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 设置文本样式
-        ctx.font = '20px sans-serif';
+        // 设置宝可梦风格文本样式
+        ctx.font = 'bold 20px Arial Black';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = '#ffde00';
+        ctx.strokeStyle = '#3b4cca';
+        ctx.lineWidth = 3;
         
         // 显示提示信息
-        ctx.fillText('所有谜面已显示完毕！', canvas.width / 2, canvas.height / 2);
-        ctx.font = '14px sans-serif';
-        ctx.fillText('感谢您的参与！', canvas.width / 2, canvas.height / 2 + 30);
+        ctx.strokeText('所有Emoji已收集完毕！', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('所有Emoji已收集完毕！', canvas.width / 2, canvas.height / 2);
+        
+        ctx.font = 'bold 16px Arial Black';
+        ctx.strokeText('恭喜成为Emoji大师！', canvas.width / 2, canvas.height / 2 + 30);
+        ctx.fillText('恭喜成为Emoji大师！', canvas.width / 2, canvas.height / 2 + 30);
         
         // 清空输入框并禁用
         this.emojiInput.value = '';
@@ -598,12 +633,9 @@ class EmojiGame {
             miniCanvas.height = 60;
             const miniCtx = miniCanvas.getContext('2d');
             
-            // 1. 绘制渐变背景
-            const gradient = miniCtx.createLinearGradient(0, 0, miniCanvas.width, miniCanvas.height);
-            gradient.addColorStop(0, '#ff6b6b');
-            gradient.addColorStop(0.5, '#4ecdc4');
-            gradient.addColorStop(1, '#45b7d1');
-            miniCtx.fillStyle = gradient;
+            // 1. 绘制当前背景色，与主Canvas保持一致
+            const bgColor = this.currentBgColor || '#ffffff';
+            miniCtx.fillStyle = bgColor;
             miniCtx.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
             
             if (this.guessedStatus[emoji]) {
@@ -620,7 +652,7 @@ class EmojiGame {
                 miniCtx.textBaseline = 'middle';
                 miniCtx.fillText(emoji, 30, 30);
             } else {
-                // 未猜对的Emoji：绘制纯色轮廓
+                // 未猜对的Emoji：绘制纯色轮廓，与主Canvas逻辑完全一致
                 // 创建离屏Canvas，用于处理Emoji
                 const offscreenCanvas = document.createElement('canvas');
                 offscreenCanvas.width = 60;
@@ -641,7 +673,7 @@ class EmojiGame {
                 const imageData = offscreenCtx.getImageData(0, 0, 60, 60);
                 const data = imageData.data;
                 
-                // 遍历像素，非透明区域绘制纯色
+                // 遍历像素，非透明区域绘制黑色，透明区域保持bgColor
                 for (let y = 0; y < 60; y++) {
                     for (let x = 0; x < 60; x++) {
                         const index = (y * 60 + x) * 4;
@@ -652,6 +684,7 @@ class EmojiGame {
                             miniCtx.fillStyle = '#000000';
                             miniCtx.fillRect(x, y, 1, 1);
                         }
+                        // 透明区域保持bgColor，无需额外处理
                     }
                 }
             }
@@ -661,8 +694,26 @@ class EmojiGame {
             // 添加点击事件，未猜对的项目可以继续猜谜
             historyItem.addEventListener('click', () => {
                 if (!this.guessedStatus[emoji]) {
-                    // 切换到该Emoji继续猜谜
+                    // 切换到该Emoji继续猜谜，使用当时的颜色
                     this.currentEmoji = emoji;
+                    // 保存当时的颜色为当前颜色
+                    this.currentBgColor = emojiItem.color;
+                    
+                    // 更新所有相关元素的背景色
+                    const pokemonFrame = document.querySelector('.pokemon-frame');
+                    if (pokemonFrame) {
+                        pokemonFrame.style.backgroundColor = this.currentBgColor;
+                    }
+                    const emojiContainer = document.querySelector('.emoji-container');
+                    if (emojiContainer) {
+                        emojiContainer.style.backgroundColor = this.currentBgColor;
+                    }
+                    const emojiCanvas = document.getElementById('emojiCanvas');
+                    if (emojiCanvas) {
+                        emojiCanvas.style.backgroundColor = this.currentBgColor;
+                    }
+                    
+                    // 绘制Emoji
                     this.drawEmojiOutline(emoji);
                     this.emojiInput.value = '';
                     this.emojiInput.focus();
