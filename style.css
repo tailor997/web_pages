@@ -1,0 +1,399 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+/* 游戏主区域 */
+.game-area {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Emoji轮廓显示区域 */
+.emoji-container {
+    margin: 30px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#emojiCanvas {
+    border: 3px solid #e0e0e0;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#emojiCanvas:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 用户输入区域 */
+.input-area {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#emojiInput {
+    padding: 12px 20px;
+    font-size: 24px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    text-align: center;
+    width: 200px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+#emojiInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+}
+
+#submitBtn {
+    padding: 12px 24px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+#submitBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+#submitBtn:active {
+    transform: translateY(0);
+}
+
+/* 手势按钮 */
+.gesture-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 15px;
+}
+
+.gesture-btn {
+    flex: 1;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.gesture-btn:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.gesture-btn.left {
+    flex-direction: row-reverse;
+}
+
+/* 已出现Emoji汇总列表 */
+.history-panel {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+    transition: left 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.history-panel.active {
+    left: 0;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.history-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.history-list {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+}
+
+.history-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: #e9ecef;
+}
+
+/* 已猜对的历史记录项样式 */
+.history-item.guessed {
+    background: #d4edda;
+    border: 2px solid #28a745;
+}
+
+.history-item.guessed:hover {
+    background: #c3e6cb;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+}
+
+/* 未猜对的历史记录项样式 */
+.history-item.not-guessed {
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+    cursor: pointer;
+}
+
+.history-item.not-guessed:hover {
+    background: #f5c6cb;
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* 未猜对的历史记录项添加点击效果 */
+.history-item.not-guessed:active {
+    transform: translateY(0) scale(1);
+    transition: all 0.1s ease;
+}
+
+.history-item .emoji {
+    font-size: 32px;
+}
+
+.history-item canvas {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+/* 动画容器 */
+.animation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+}
+
+/* 烟花动画 */
+.firework {
+    position: absolute;
+    font-size: 32px;
+    animation: fireworks 1.5s ease-out forwards;
+}
+
+@keyframes fireworks {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 屎类Emoji坠落动画 */
+.poop {
+    position: absolute;
+    font-size: 32px;
+    top: -50px;
+    animation: poopFall 2s ease-in forwards;
+}
+
+@keyframes poopFall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .game-area {
+        padding: 20px;
+    }
+    
+    #emojiCanvas {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .input-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    #emojiInput {
+        width: 180px;
+        font-size: 20px;
+    }
+    
+    .gesture-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .gesture-btn {
+        flex-direction: row !important;
+        justify-content: center;
+    }
+    
+    .history-panel {
+        max-width: 100%;
+    }
+    
+    .history-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 过渡动画 */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 滑动动画 */
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.slide-out-left {
+    animation: slideOutLeft 0.3s ease-in;
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}

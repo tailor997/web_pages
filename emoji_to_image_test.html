@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji转图片测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 1px solid #333;
+            margin: 10px 0;
+        }
+        .emoji-input {
+            font-size: 24px;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emoji转图片测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 文本形式Emoji</h2>
+        <div style="font-size: 48px;">😊</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Canvas绘制Emoji</h2>
+        <canvas id="textCanvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 转换为图片后处理</h2>
+        <canvas id="imageCanvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. 轮廓效果</h2>
+        <canvas id="outlineCanvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试自定义Emoji</h2>
+        <input type="text" id="emojiInput" class="emoji-input" value="😊" maxlength="2">
+        <button id="testBtn">测试</button>
+    </div>
+
+    <script>
+        // 通用绘制函数：将Emoji读取为RGBA图像，透明区域绘制渐变色，非透明区域绘制格子
+        function drawEmojiWithStyle(canvas, emoji, size) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const gridSize = 10;
+            
+            // 1. 创建离屏Canvas，绘制Emoji
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = width;
+            offscreenCanvas.height = height;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+            
+            // 清除离屏Canvas（透明背景）
+            offscreenCtx.clearRect(0, 0, width, height);
+            
+            // 绘制Emoji到离屏Canvas
+            offscreenCtx.fillStyle = '#ffffff';
+            offscreenCtx.font = `${size}px sans-serif`;
+            offscreenCtx.textAlign = 'center';
+            offscreenCtx.textBaseline = 'middle';
+            offscreenCtx.fillText(emoji, centerX, centerY);
+            
+            // 2. 获取Emoji的RGBA图像数据
+            const imageData = offscreenCtx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            // 3. 绘制渐变色背景（透明区域）
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 4. 遍历像素，非透明区域绘制纯色
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const index = (y * width + x) * 4;
+                    const alpha = data[index + 3];
+                    
+                    // 如果是非透明像素（alpha > 0），绘制纯色
+                    if (alpha > 0) {
+                        // 绘制白色纯色
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
+        }
+        
+        // 测试函数
+        function testEmojiProcessing(emoji) {
+            console.log('测试Emoji:', emoji);
+            const size = 120;
+            
+            // 直接绘制到所有三个Canvas
+            const textCanvas = document.getElementById('textCanvas');
+            const imageCanvas = document.getElementById('imageCanvas');
+            const outlineCanvas = document.getElementById('outlineCanvas');
+            
+            drawEmojiWithStyle(textCanvas, emoji, size);
+            drawEmojiWithStyle(imageCanvas, emoji, size);
+            drawEmojiWithStyle(outlineCanvas, emoji, size);
+        }
+        
+        // 初始化测试
+        testEmojiProcessing('😊');
+        
+        // 自定义测试
+        document.getElementById('testBtn').addEventListener('click', () => {
+            const emoji = document.getElementById('emojiInput').value.trim();
+            if (emoji) {
+                testEmojiProcessing(emoji);
+            }
+        });
+    </script>
+</body>
+</html>
