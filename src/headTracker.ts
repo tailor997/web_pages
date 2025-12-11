@@ -25,6 +25,7 @@ export class HeadTracker {
     private directionHistory: Direction[];
     private historySize: number;
     private lastDirection: Direction;
+    private lastLandmarks: any[] | null;
     private detector: any;
     private frameCallback: number | null;
 
@@ -52,6 +53,7 @@ export class HeadTracker {
         this.directionHistory = [];
         this.historySize = 5;
         this.lastDirection = 'none';
+        this.lastLandmarks = null;
         this.frameCallback = null;
     }
 
@@ -110,12 +112,16 @@ export class HeadTracker {
                 throw new Error('getUserMedia is not supported in this browser');
             }
             
+            // 检查是否在安全上下文（HTTPS或localhost）中运行
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                throw new Error('Camera access requires HTTPS connection. Please use HTTPS protocol for camera access.');
+            }
+            
             console.log('Requesting camera permissions...');
+            // 使用更简单的constraints以提高兼容性
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: 'user',
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
+                    facingMode: 'user'
                 }
             });
             console.log('Camera permissions granted successfully');
@@ -165,7 +171,18 @@ export class HeadTracker {
         } catch (error) {
             console.error('Error accessing camera:', error);
             console.error('Error stack:', (error as Error).stack);
-            throw error;
+            // 增强错误信息，提供更详细的指导
+            let errorMessage = (error as Error).message;
+            if (errorMessage.includes('HTTPS')) {
+                errorMessage += ' Please ensure your server is using HTTPS protocol.';
+            } else if (errorMessage.includes('Permission denied')) {
+                errorMessage += ' Please grant camera permissions in your browser settings.';
+            } else if (errorMessage.includes('NotReadableError')) {
+                errorMessage += ' Please close other applications using the camera and try again.';
+            } else if (errorMessage.includes('NotFoundError')) {
+                errorMessage += ' Please connect a camera device and try again.';
+            }
+            throw new Error(errorMessage);
         }
     }
 
@@ -222,10 +239,14 @@ export class HeadTracker {
                 stabilizedDirection: 'none',
                 thresholds: { pitch: pitchThreshold, yaw: yawThreshold }
             });
+            this.lastLandmarks = null;
             return;
         }
         
         const landmarks = results.landmarks[0];
+        
+        // 更新最后检测到的地标点，用于姿态识别
+        this.lastLandmarks = landmarks;
         
         // 计算头部姿态（简化版本，使用关键特征点）
         const pose = this.calculateHeadPose(landmarks);
@@ -287,8 +308,8 @@ export class HeadTracker {
         };
     }
 
-    // 识别头部方向
-    private recognizeDirection(pose: HeadPose): Direction {
+    // 识别头部方向 - 注释掉旧实现
+    /*private recognizeDirection(pose: HeadPose): Direction {
         const { pitch, yaw } = pose;
         
         // 根据灵敏度计算阈值
@@ -307,6 +328,73 @@ export class HeadTracker {
         } else {
             return 'none'; // 正视
         }
+    }*/
+    
+    // 识别头部方向 - 新实现
+    private recognizeDirection(_pose: HeadPose): Direction {
+        // 获取关键特征点
+        // 注意：landmarks数组索引对应关系来自MediaPipe Pose Landmarker
+        // 0: 鼻子, 2: 左眼, 5: 右眼, 7: 左耳, 8: 右耳
+        
+        // 检查是否有足够的地标点
+        if (!this.lastLandmarks || this.lastLandmarks.length < 9) {
+            return 'none';
+        }
+        
+        const nose = this.lastLandmarks[0];
+        const leftEye = this.lastLandmarks[2];
+        const rightEye = this.lastLandmarks[5];
+        const leftEar = this.lastLandmarks[7];
+        const rightEar = this.lastLandmarks[8];
+        
+        // 计算耳朵的平均Y坐标（用于比较高度）
+        const earsAvgY = (leftEar.y + rightEar.y) / 2;
+        // 计算耳朵的X坐标范围（用于比较水平位置）
+        const earsMinX = Math.min(leftEar.x, rightEar.x);
+        const earsMaxX = Math.max(leftEar.x, rightEar.x);
+        const earsCenterX = (earsMinX + earsMaxX) / 2;
+        // 定义横向中间区域（耳朵间距的60%）
+        const centerRange = (earsMaxX - earsMinX) * 0.6;
+        
+        // 1. 抬头判定：鼻子关键点位置处于左右耳关键点位置的上方
+        if (nose.y < earsAvgY) {
+            return 'up';
+        }
+        
+        // 2. 低头判定：左右眼关键点位置处于左右耳关键点位置的下方
+        if (leftEye.y > earsAvgY && rightEye.y > earsAvgY) {
+            return 'down';
+        }
+        
+        // 3. 左转判定：鼻子关键点位置处于耳朵关键点位置的左侧
+        if (nose.x < earsCenterX - centerRange / 2) {
+            return 'left';
+        }
+        
+        // 4. 右转判定：鼻子关键点位置处于耳朵关键点位置的右侧
+        if (nose.x > earsCenterX + centerRange / 2) {
+            return 'right';
+        }
+        
+        // 5. 正视判定：
+        //    - 眼睛关键点位置处于耳朵关键点位置的上方
+        //    - 鼻子关键点位置处于耳朵关键点位置的下方
+        //    - 眼睛和鼻子关键点均处于耳朵关键点的横向中间区域
+        const eyesAboveEars = leftEye.y < earsAvgY && rightEye.y < earsAvgY;
+        const noseBelowEars = nose.y > earsAvgY;
+        const eyesInCenter = leftEye.x > earsCenterX - centerRange / 2 && 
+                            leftEye.x < earsCenterX + centerRange / 2 && 
+                            rightEye.x > earsCenterX - centerRange / 2 && 
+                            rightEye.x < earsCenterX + centerRange / 2;
+        const noseInCenter = nose.x > earsCenterX - centerRange / 2 && 
+                            nose.x < earsCenterX + centerRange / 2;
+        
+        if (eyesAboveEars && noseBelowEars && eyesInCenter && noseInCenter) {
+            return 'none';
+        }
+        
+        // 默认返回正视
+        return 'none';
     }
 
     // 更新方向历史
@@ -353,18 +441,30 @@ export class HeadTracker {
         // 清除画布
         this.ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
         
-        // 绘制关键点
-        this.ctx.fillStyle = '#ff0000';
         this.ctx.strokeStyle = '#00ff00';
         this.ctx.lineWidth = 2;
         
-        landmarks.forEach(landmark => {
+        // 绘制关键点，根据不同部位使用不同颜色
+        landmarks.forEach((landmark, index) => {
             const x = landmark.x * this.canvasElement.width;
             const y = landmark.y * this.canvasElement.height;
             
             if (this.ctx) {
+                // 设置不同关键点的颜色
+                if (index === 0) {
+                    // 鼻子 - 绿色
+                    this.ctx.fillStyle = '#00ff00';
+                } else if (index === 7 || index === 8) {
+                    // 左右耳 - 橙色
+                    this.ctx.fillStyle = '#ffa500';
+                } else {
+                    // 其他关键点 - 红色
+                    this.ctx.fillStyle = '#ff0000';
+                }
+                
                 this.ctx.beginPath();
-                this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+                // 增大关键点大小，使其更清晰可见
+                this.ctx.arc(x, y, 4, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         });
