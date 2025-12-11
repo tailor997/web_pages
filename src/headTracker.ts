@@ -62,42 +62,29 @@ export class HeadTracker {
         try {
             console.log('Starting head tracker initialization...');
             
-            // 获取摄像头权限并启动视频流 - 先检查摄像头访问，再加载MediaPipe
+            // 第一步：先启动摄像头，确保摄像头流能够正常获取
             console.log('Starting camera...');
             await this.startCamera();
             console.log('Camera started successfully');
             
-            // 动态加载 MediaPipe 模块
-            console.log('Loading MediaPipe tasks-vision module...');
-            let FilesetResolver, PoseLandmarker;
+            // 第二步：尝试加载 MediaPipe 模块和初始化，即使失败也不影响摄像头显示
             try {
+                // 动态加载 MediaPipe 模块
+                console.log('Loading MediaPipe tasks-vision module...');
                 const module = await import('@mediapipe/tasks-vision');
-                FilesetResolver = module.FilesetResolver;
-                PoseLandmarker = module.PoseLandmarker;
+                const { FilesetResolver, PoseLandmarker } = module;
                 console.log('MediaPipe module loaded successfully');
-            } catch (importError) {
-                console.error('Failed to load MediaPipe module:', importError);
-                throw new Error('Failed to load MediaPipe vision module. Please check your network connection or try again later.');
-            }
-            
-            // 配置模型路径
-            console.log('Creating FilesetResolver...');
-            let vision;
-            try {
-                vision = await FilesetResolver.forVisionTasks(
+                
+                // 配置模型路径
+                console.log('Creating FilesetResolver...');
+                const vision = await FilesetResolver.forVisionTasks(
                     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm"
                 );
                 console.log('FilesetResolver created successfully');
-            } catch (resolverError) {
-                console.error('Failed to create FilesetResolver:', resolverError);
-                throw new Error('Failed to initialize MediaPipe resolver. Please check your network connection or try again later.');
-            }
-            
-            // 创建姿势检测器
-            console.log('Creating PoseLandmarker...');
-            let detector;
-            try {
-                detector = await PoseLandmarker.createFromOptions(vision, {
+                
+                // 创建姿势检测器
+                console.log('Creating PoseLandmarker...');
+                this.detector = await PoseLandmarker.createFromOptions(vision, {
                     baseOptions: {
                         modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
                         delegate: "GPU"
@@ -106,23 +93,22 @@ export class HeadTracker {
                     numPoses: 1
                 });
                 console.log('PoseLandmarker created successfully');
-            } catch (detectorError) {
-                console.error('Failed to create PoseLandmarker:', detectorError);
-                throw new Error('Failed to initialize MediaPipe pose detector. Please check your network connection or try again later.');
+                
+                // 开始处理视频帧
+                console.log('Starting video processing...');
+                this.startProcessing();
+                console.log('Video processing started successfully');
+                
+                console.log('Head tracker initialized successfully');
+            } catch (mediapipeError) {
+                console.error('MediaPipe initialization failed, camera will still work:', mediapipeError);
+                // 即使 MediaPipe 初始化失败，摄像头仍然可以工作
+                console.log('Camera initialized successfully, but MediaPipe features are unavailable');
             }
-            
-            this.detector = detector;
-            
-            // 开始处理视频帧
-            console.log('Starting video processing...');
-            this.startProcessing();
-            console.log('Video processing started successfully');
-            
-            console.log('Head tracker initialized successfully');
-        } catch (error) {
-            console.error('Error initializing head tracker:', error);
-            console.error('Error stack:', (error as Error).stack);
-            throw error;
+        } catch (cameraError) {
+            console.error('Error initializing camera:', cameraError);
+            console.error('Error stack:', (cameraError as Error).stack);
+            throw cameraError;
         }
     }
 
@@ -448,12 +434,12 @@ export class HeadTracker {
         
         // 3. 左转判定：鼻子关键点位置处于耳朵关键点位置的左侧
         if (nose.x < earsCenterX - centerRange / 2) {
-            return 'left';
+            return 'right';
         }
         
         // 4. 右转判定：鼻子关键点位置处于耳朵关键点位置的右侧
         if (nose.x > earsCenterX + centerRange / 2) {
-            return 'right';
+            return 'left';
         }
         
         // 5. 正视判定：
@@ -524,9 +510,10 @@ export class HeadTracker {
         this.ctx.strokeStyle = '#00ff00';
         this.ctx.lineWidth = 2;
         
-        // 绘制关键点，根据不同部位使用不同颜色
+        // 绘制关键点，根据不同部位使用不同颜色，并进行镜像翻转
         landmarks.forEach((landmark, index) => {
-            const x = landmark.x * this.canvasElement.width;
+            // 进行左右方向镜像翻转
+            const x = this.canvasElement.width - (landmark.x * this.canvasElement.width);
             const y = landmark.y * this.canvasElement.height;
             
             if (this.ctx) {
@@ -558,8 +545,8 @@ export class HeadTracker {
             this.ctx.strokeStyle = '#00ffff';
             this.ctx.lineWidth = 3;
             
-            // 根据俯仰角和偏航角绘制方向线
-            const directionX = centerX + (pose.yaw * 5);
+            // 根据俯仰角和偏航角绘制方向线，注意yaw方向需要反转以匹配镜像翻转
+            const directionX = centerX - (pose.yaw * 5);
             const directionY = centerY + (pose.pitch * 5);
             
             this.ctx.beginPath();

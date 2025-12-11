@@ -39,9 +39,10 @@ export class Game2048 {
         this.onScoreChange = onScoreChange;
         this.onStateChange = onStateChange;
         this.onBoardChange = onBoardChange;
-        this.board = [];
+        // 初始化空白游戏板
+        this.board = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
         this.score = 0;
-        this.state = 'playing';
+        this.state = 'paused';
         this.history = [];
         this.maxHistorySize = 7;
     }

@@ -92,12 +92,15 @@ class App {
         const videoElement = document.getElementById('camera-feed')! as HTMLVideoElement;
         const canvasElement = document.getElementById('face-canvas')! as HTMLCanvasElement;
         
+        // 检查sensitivitySlider是否存在，使用默认值5
+        const sensitivityValue = this.sensitivitySlider ? parseInt(this.sensitivitySlider.value) : 5;
+        
         this.headTracker = new HeadTracker(
             videoElement,
             canvasElement,
             this.onDirectionChange.bind(this),
             this.onPoseUpdate.bind(this),
-            parseInt(this.sensitivitySlider.value),
+            sensitivityValue,
             this.onMonitoringData.bind(this)
         );
         
@@ -107,6 +110,9 @@ class App {
         
         // 初始化应用
         this.init();
+        
+        // 更新按钮文本
+        this.updateRestartButtonText();
     }
 
     // 初始化应用
@@ -116,19 +122,18 @@ class App {
         // 添加初始化日志
         this.addToStatusLog('Initializing application...');
         
-        // 确保游戏状态为playing
-        console.log('Checking game state...');
-        if (this.game.getState() !== 'playing') {
-            console.log('Game state not playing, initializing game...');
-            this.game.init();
-            this.addToStatusLog('Game state reset to playing');
-        }
-        console.log('Game state is now:', this.game.getState());
+        // 初始状态下不自动开始游戏，等待用户点击Start按钮
+        console.log('Game initialized in standby state, waiting for user to click Start');
         
-        // 初始化游戏板
-        console.log('Initializing game board...');
+        // 初始化空白游戏板
+        console.log('Initializing empty game board...');
         this.updateGameBoard(this.game.getBoard());
-        console.log('Game board initialized successfully');
+        console.log('Empty game board initialized successfully');
+        
+        // 设置初始游戏状态为paused
+        this.game.pause();
+        console.log('Game state set to paused, waiting for user to start');
+        this.addToStatusLog('Game ready, click Start to begin');
         
         // 绑定事件监听器
         console.log('Binding event listeners...');
@@ -272,12 +277,14 @@ class App {
     private bindEventListeners(): void {
         console.log('Binding all event listeners...');
         
-        // 灵敏度滑块事件
-        this.sensitivitySlider.addEventListener('input', (e) => {
-            const sensitivity = parseInt((e.target as HTMLInputElement).value);
-            console.log('Sensitivity changed to:', sensitivity);
-            this.headTracker.setSensitivity(sensitivity);
-        });
+        // 灵敏度滑块事件 - 仅当元素存在时绑定
+        if (this.sensitivitySlider) {
+            this.sensitivitySlider.addEventListener('input', (e) => {
+                const sensitivity = parseInt((e.target as HTMLInputElement).value);
+                console.log('Sensitivity changed to:', sensitivity);
+                this.headTracker.setSensitivity(sensitivity);
+            });
+        }
         
         // 暂停/继续按钮事件
         this.pauseButton.addEventListener('click', () => {
@@ -423,6 +430,9 @@ class App {
     // 处理分数变化
     private onScoreChange(score: number): void {
         this.scoreElement.textContent = score.toString();
+        
+        // 更新重启按钮文本
+        this.updateRestartButtonText();
     }
 
     // 处理游戏状态变化
@@ -441,6 +451,16 @@ class App {
                 this.showGameOverModal('Congratulations!', 'You won with', this.game.getScore());
                 break;
         }
+        
+        // 更新重启按钮文本
+        this.updateRestartButtonText();
+    }
+    
+    // 更新重启按钮文本
+    private updateRestartButtonText(): void {
+        // 初始状态下显示"Start"，游戏开始后显示"Restart"
+        const gameStarted = this.game.getScore() > 0 || this.game.getState() === 'playing';
+        this.restartButton.textContent = gameStarted ? 'Restart' : 'Start';
     }
 
     // 处理游戏板变化
@@ -483,7 +503,20 @@ class App {
 
     // 重新开始游戏
     private restartGame(): void {
-        this.game.restart();
+        // 根据当前游戏状态决定是开始新游戏还是重新开始
+        if (this.game.getState() === 'paused' && this.game.getScore() === 0) {
+            // 游戏未开始，初始化游戏
+            console.log('Starting new game...');
+            this.game.init();
+            this.game.resume();
+            this.addToStatusLog('Game started');
+        } else {
+            // 游戏已开始，重新开始
+            console.log('Restarting game...');
+            this.game.restart();
+            this.addToStatusLog('Game restarted');
+        }
+        
         this.lastDirection = 'none';
         this.updateDirectionIndicators('none');
         this.updateUndoState();
