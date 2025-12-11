@@ -62,34 +62,56 @@ export class HeadTracker {
         try {
             console.log('Starting head tracker initialization...');
             
-            // 动态加载 MediaPipe 模块
-            console.log('Loading MediaPipe tasks-vision module...');
-            const { FilesetResolver, PoseLandmarker } = await import('@mediapipe/tasks-vision');
-            console.log('MediaPipe module loaded successfully');
-            
-            // 配置模型路径
-            console.log('Creating FilesetResolver...');
-            const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm"
-            );
-            console.log('FilesetResolver created successfully');
-            
-            // 创建姿势检测器
-            console.log('Creating PoseLandmarker...');
-            this.detector = await PoseLandmarker.createFromOptions(vision, {
-                baseOptions: {
-                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
-                    delegate: "GPU"
-                },
-                runningMode: "VIDEO",
-                numPoses: 1
-            });
-            console.log('PoseLandmarker created successfully');
-            
-            // 获取摄像头权限并启动视频流
+            // 获取摄像头权限并启动视频流 - 先检查摄像头访问，再加载MediaPipe
             console.log('Starting camera...');
             await this.startCamera();
             console.log('Camera started successfully');
+            
+            // 动态加载 MediaPipe 模块
+            console.log('Loading MediaPipe tasks-vision module...');
+            let FilesetResolver, PoseLandmarker;
+            try {
+                const module = await import('@mediapipe/tasks-vision');
+                FilesetResolver = module.FilesetResolver;
+                PoseLandmarker = module.PoseLandmarker;
+                console.log('MediaPipe module loaded successfully');
+            } catch (importError) {
+                console.error('Failed to load MediaPipe module:', importError);
+                throw new Error('Failed to load MediaPipe vision module. Please check your network connection or try again later.');
+            }
+            
+            // 配置模型路径
+            console.log('Creating FilesetResolver...');
+            let vision;
+            try {
+                vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm"
+                );
+                console.log('FilesetResolver created successfully');
+            } catch (resolverError) {
+                console.error('Failed to create FilesetResolver:', resolverError);
+                throw new Error('Failed to initialize MediaPipe resolver. Please check your network connection or try again later.');
+            }
+            
+            // 创建姿势检测器
+            console.log('Creating PoseLandmarker...');
+            let detector;
+            try {
+                detector = await PoseLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numPoses: 1
+                });
+                console.log('PoseLandmarker created successfully');
+            } catch (detectorError) {
+                console.error('Failed to create PoseLandmarker:', detectorError);
+                throw new Error('Failed to initialize MediaPipe pose detector. Please check your network connection or try again later.');
+            }
+            
+            this.detector = detector;
             
             // 开始处理视频帧
             console.log('Starting video processing...');
@@ -107,23 +129,67 @@ export class HeadTracker {
     // 启动摄像头
     private async startCamera(): Promise<void> {
         try {
-            console.log('Checking navigator.mediaDevices...');
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.log('Checking browser compatibility...');
+            
+            // 更可靠的getUserMedia支持检测，使用TypeScript安全的方式
+            let getUserMediaSupported = false;
+            
+            // 使用typeof检查，避免TypeScript编译错误
+            if (typeof navigator !== 'undefined') {
+                // 检查不同浏览器的getUserMedia支持方式
+                if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+                    getUserMediaSupported = true;
+                    console.log('getUserMedia supported via navigator.mediaDevices');
+                } else if (typeof (navigator as any).webkitGetUserMedia === 'function') {
+                    getUserMediaSupported = true;
+                    console.log('getUserMedia supported via webkitGetUserMedia');
+                } else if (typeof (navigator as any).mozGetUserMedia === 'function') {
+                    getUserMediaSupported = true;
+                    console.log('getUserMedia supported via mozGetUserMedia');
+                } else if (typeof (navigator as any).msGetUserMedia === 'function') {
+                    getUserMediaSupported = true;
+                    console.log('getUserMedia supported via msGetUserMedia');
+                }
+            }
+            
+            if (!getUserMediaSupported) {
+                // 检查是否是CSP导致的问题
+                const cspHeaders = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
+                if (cspHeaders.length > 0) {
+                    console.warn('Content Security Policy detected:', Array.from(cspHeaders).map(meta => meta.getAttribute('content')));
+                    throw new Error('Camera access blocked by Content Security Policy. Please check your CSP settings.');
+                }
                 throw new Error('getUserMedia is not supported in this browser');
             }
             
-            // 检查是否在安全上下文（HTTPS或localhost）中运行
-            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            // 检查是否在安全上下文（HTTPS或本地地址）中运行
+            // 允许的本地地址：localhost、127.0.0.1以及本地网络IP（192.168.x.x、10.x.x.x等）
+            const isLocalIP = /^(192\.168|10|172\.(1[6-9]|2\d|3[01]))\./.test(window.location.hostname);
+            
+            if (window.location.protocol !== 'https:' && 
+                window.location.hostname !== 'localhost' && 
+                window.location.hostname !== '127.0.0.1' && 
+                !isLocalIP) {
                 throw new Error('Camera access requires HTTPS connection. Please use HTTPS protocol for camera access.');
             }
             
             console.log('Requesting camera permissions...');
-            // 使用更简单的constraints以提高兼容性
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user'
-                }
-            });
+            
+            let stream: MediaStream;
+            // 使用不同的方式获取媒体流，提高兼容性
+            try {
+                // 现代浏览器方式
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user'
+                    }
+                });
+            } catch (modernError) {
+                console.warn('Modern getUserMedia failed, trying legacy methods:', modernError);
+                // 尝试使用更简单的constraints
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            }
+            
             console.log('Camera permissions granted successfully');
             
             console.log('Setting video element srcObject...');
@@ -171,8 +237,17 @@ export class HeadTracker {
         } catch (error) {
             console.error('Error accessing camera:', error);
             console.error('Error stack:', (error as Error).stack);
+            
+            // 记录调试信息
+            console.log('Navigator object available:', !!navigator);
+            console.log('navigator.mediaDevices available:', !!navigator.mediaDevices);
+            if (navigator.mediaDevices) {
+                console.log('navigator.mediaDevices.getUserMedia available:', typeof navigator.mediaDevices.getUserMedia);
+            }
+            
             // 增强错误信息，提供更详细的指导
             let errorMessage = (error as Error).message;
+            
             if (errorMessage.includes('HTTPS')) {
                 errorMessage += ' Please ensure your server is using HTTPS protocol.';
             } else if (errorMessage.includes('Permission denied')) {
@@ -181,7 +256,12 @@ export class HeadTracker {
                 errorMessage += ' Please close other applications using the camera and try again.';
             } else if (errorMessage.includes('NotFoundError')) {
                 errorMessage += ' Please connect a camera device and try again.';
+            } else if (errorMessage.includes('Content Security Policy')) {
+                errorMessage += ' Your site\'s Content Security Policy may be blocking camera access. Please check your CSP headers.';
+            } else if (errorMessage.includes('getUserMedia is not supported')) {
+                errorMessage += ' Please use a modern browser like Chrome, Firefox, or Safari.';
             }
+            
             throw new Error(errorMessage);
         }
     }

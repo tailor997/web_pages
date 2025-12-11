@@ -169,19 +169,48 @@ class App {
     // 显示摄像头错误提示
     private showCameraError(error: Error): void {
         let errorMessage = 'Failed to access camera. Please make sure you have granted camera permissions and your camera is working properly.';
+        let errorType = 'general';
         
+        // 详细的错误类型检测
         if (error.name === 'NotAllowedError') {
             errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.';
+            errorType = 'permission';
         } else if (error.name === 'NotFoundError') {
             errorMessage = 'No camera found. Please connect a camera device and try again.';
+            errorType = 'device';
         } else if (error.name === 'NotReadableError') {
             errorMessage = 'Camera is in use by another application. Please close other applications using the camera and try again.';
+            errorType = 'busy';
+        } else if (error.name === 'SecurityError' || error.message.includes('HTTPS')) {
+            // 处理安全上下文错误
+            errorMessage = 'Camera access requires HTTPS connection. Please use HTTPS protocol for camera access.';
+            errorType = 'security';
+        } else if (error.message.includes('getUserMedia is not supported')) {
+            // 处理浏览器不支持错误
+            errorMessage = 'Camera access is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.';
+            errorType = 'unsupported';
+        } else if (error.message.includes('Failed to load MediaPipe')) {
+            // 处理MediaPipe加载错误
+            errorMessage = 'Failed to load MediaPipe vision module. Please check your network connection or try again later.';
+            errorType = 'network';
+        } else if (error.message.includes('Failed to initialize MediaPipe')) {
+            // 处理MediaPipe初始化错误
+            errorMessage = 'Failed to initialize MediaPipe components. Please check your network connection or try again later.';
+            errorType = 'network';
+        } else if (error.message.includes('Permission denied')) {
+            // 处理通用权限错误
+            errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.';
+            errorType = 'permission';
+        } else if (error.message.includes('NotSupportedError')) {
+            // 处理特定浏览器不支持的功能
+            errorMessage = 'Camera access feature not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.';
+            errorType = 'unsupported';
         }
         
         // 创建错误提示元素
         const errorElement = document.createElement('div');
-        errorElement.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-md z-50 max-w-md text-center';
-        errorElement.textContent = errorMessage;
+        errorElement.className = `fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-md z-50 max-w-md text-center ${errorType}-error`;
+        errorElement.innerHTML = `${errorMessage}<br><small class="opacity-80">Error: ${error.name}</small>`;
         
         // 添加关闭按钮
         const closeButton = document.createElement('button');
@@ -200,10 +229,10 @@ class App {
             if (errorElement.parentNode) {
                 errorElement.remove();
             }
-        }, 5000);
+        }, 8000);
         
         // 添加到状态日志
-        this.addToStatusLog(`Camera Error: ${error.message}`);
+        this.addToStatusLog(`Camera ${errorType.charAt(0).toUpperCase() + errorType.slice(1)} Error: ${error.message}`);
     }
     
     // 处理监控数据更新
