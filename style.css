@@ -1,0 +1,512 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 页面背景 */
+body {
+    background-color: #0a0a0a;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+/* 容器样式 */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+/* 蜡烛整体容器 */
+.candle {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
+}
+
+/* 蜡烛主体 */
+.candle-body {
+    width: 120px;
+    height: 280px;
+    background: 
+        linear-gradient(135deg, #ffffff 0%, #f0f0f0 20%, #e0e0e0 40%, #d0d0d0 60%, #c0c0c0 80%, #b0b0b0 100%),
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.1) 0%, transparent 50%);
+    background-blend-mode: overlay;
+    border-radius: 60px 60px 10px 10px;
+    position: relative;
+    box-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.3),
+        inset 0 -20px 20px rgba(0, 0, 0, 0.1),
+        inset 0 5px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+/* 蜡烛顶部圆截面 */
+.candle-body::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 20px;
+    background: radial-gradient(circle, #ff8c00 0%, #ff6347 50%, transparent 100%);
+    border-radius: 50%;
+    opacity: 0.8;
+    z-index: 1;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
+}
+
+/* 蜡泪效果 - 左侧 */
+.candle-body::after {
+    content: '';
+    position: absolute;
+    background: linear-gradient(to bottom, #ffffff 0%, #d0d0d0 100%);
+    width: 20px;
+    height: 80px;
+    top: 20px;
+    left: -5px;
+    transform: rotate(-15deg);
+    border-radius: 10px 10px 50% 50%;
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    z-index: 0;
+}
+
+/* 蜡泪效果 - 右侧 */
+.candle-body .wax-tear-right {
+    position: absolute;
+    background: linear-gradient(to bottom, #ffffff 0%, #d0d0d0 100%);
+    width: 15px;
+    height: 60px;
+    top: 40px;
+    right: -3px;
+    transform: rotate(10deg);
+    border-radius: 10px 10px 50% 50%;
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    z-index: 0;
+}
+
+/* 蜡滴效果 */
+.candle-body .wax-drop {
+    position: absolute;
+    background: linear-gradient(to bottom, #ffffff 0%, #d0d0d0 100%);
+    border-radius: 50%;
+    opacity: 0.9;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.candle-body .wax-drop:nth-child(1) {
+    width: 10px;
+    height: 10px;
+    top: 100px;
+    left: 5px;
+}
+
+.candle-body .wax-drop:nth-child(2) {
+    width: 8px;
+    height: 8px;
+    top: 150px;
+    left: 3px;
+}
+
+.candle-body .wax-drop:nth-child(3) {
+    width: 12px;
+    height: 12px;
+    top: 120px;
+    right: 2px;
+}
+
+.candle-body .wax-drop:nth-child(4) {
+    width: 9px;
+    height: 9px;
+    top: 180px;
+    right: 5px;
+}
+
+/* 烛芯 */
+.candle-wick {
+    width: 4px;
+    height: 20px;
+    background-color: #333;
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    z-index: 2;
+    transition: all 0.5s ease;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* 烛芯熄灭状态 */
+.candle-wick.extinguished {
+    background-color: #555;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 火焰容器 */
+.flame-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+/* 火焰基础样式 */
+.flame {
+    width: 30px;
+    height: 100px;
+    background: radial-gradient(circle at 50% 0%, #fff 0%, #ffd700 30%, #ff8c00 60%, #ff4500 80%, transparent 100%);
+    border-radius: 50% 50% 30% 30% / 80% 80% 20% 20%;
+    position: relative;
+    z-index: 3;
+    transform-origin: bottom center;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.9),
+        0 0 40px rgba(255, 215, 0, 0.8),
+        0 0 60px rgba(255, 140, 0, 0.6),
+        0 0 80px rgba(255, 69, 0, 0.4);
+    margin-bottom: 0;
+}
+
+/* 火焰光晕 */
+.flame-glow {
+    position: absolute;
+    width: 80px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, rgba(255, 140, 0, 0.2) 40%, transparent 70%);
+    border-radius: 50%;
+    z-index: 1;
+    transition: all 0.3s ease;
+    filter: blur(10px);
+}
+
+/* 第二层光晕 */
+.flame-glow.secondary {
+    width: 120px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255, 140, 0, 0.2) 0%, rgba(255, 69, 0, 0.1) 40%, transparent 70%);
+    filter: blur(15px);
+    animation: glow-pulse-secondary 3s infinite ease-in-out;
+    opacity: 0.6;
+}
+
+/* 第三层光晕 */
+.flame-glow.tertiary {
+    width: 160px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.1) 0%, rgba(255, 0, 0, 0.05) 40%, transparent 70%);
+    filter: blur(20px);
+    animation: glow-pulse-tertiary 4s infinite ease-in-out;
+    opacity: 0.4;
+}
+
+/* 火焰摇曳动画 */
+@keyframes flicker {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 40px rgba(255, 215, 0, 0.8),
+            0 0 60px rgba(255, 140, 0, 0.6),
+            0 0 80px rgba(255, 69, 0, 0.4);
+        opacity: 1;
+    }
+    10% {
+        transform: scale(1.05) rotate(1deg);
+        box-shadow: 
+            0 0 22px rgba(255, 255, 255, 0.95),
+            0 0 45px rgba(255, 215, 0, 0.85),
+            0 0 65px rgba(255, 140, 0, 0.65),
+            0 0 85px rgba(255, 69, 0, 0.45);
+        opacity: 0.95;
+    }
+    20% {
+        transform: scale(0.98) rotate(-1deg);
+        box-shadow: 
+            0 0 18px rgba(255, 255, 255, 0.85),
+            0 0 38px rgba(255, 215, 0, 0.75),
+            0 0 58px rgba(255, 140, 0, 0.55),
+            0 0 78px rgba(255, 69, 0, 0.35);
+        opacity: 0.9;
+    }
+    30% {
+        transform: scale(1.1) rotate(2deg);
+        box-shadow: 
+            0 0 25px rgba(255, 255, 255, 1),
+            0 0 50px rgba(255, 215, 0, 0.9),
+            0 0 70px rgba(255, 140, 0, 0.7),
+            0 0 90px rgba(255, 69, 0, 0.5);
+        opacity: 0.98;
+    }
+    40% {
+        transform: scale(0.95) rotate(-2deg);
+        box-shadow: 
+            0 0 15px rgba(255, 255, 255, 0.8),
+            0 0 35px rgba(255, 215, 0, 0.7),
+            0 0 55px rgba(255, 140, 0, 0.5),
+            0 0 75px rgba(255, 69, 0, 0.3);
+        opacity: 0.88;
+    }
+    50% {
+        transform: scale(1.02) rotate(1deg);
+        box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 42px rgba(255, 215, 0, 0.8),
+            0 0 62px rgba(255, 140, 0, 0.6),
+            0 0 82px rgba(255, 69, 0, 0.4);
+        opacity: 0.96;
+    }
+    60% {
+        transform: scale(0.99) rotate(0deg);
+        box-shadow: 
+            0 0 19px rgba(255, 255, 255, 0.88),
+            0 0 39px rgba(255, 215, 0, 0.78),
+            0 0 59px rgba(255, 140, 0, 0.58),
+            0 0 79px rgba(255, 69, 0, 0.38);
+        opacity: 0.93;
+    }
+    70% {
+        transform: scale(1.08) rotate(3deg);
+        box-shadow: 
+            0 0 28px rgba(255, 255, 255, 0.98),
+            0 0 56px rgba(255, 215, 0, 0.9),
+            0 0 76px rgba(255, 140, 0, 0.7),
+            0 0 96px rgba(255, 69, 0, 0.5);
+        opacity: 0.99;
+    }
+    80% {
+        transform: scale(0.97) rotate(-2deg);
+        box-shadow: 
+            0 0 17px rgba(255, 255, 255, 0.85),
+            0 0 37px rgba(255, 215, 0, 0.75),
+            0 0 57px rgba(255, 140, 0, 0.55),
+            0 0 77px rgba(255, 69, 0, 0.35);
+        opacity: 0.89;
+    }
+    90% {
+        transform: scale(1.03) rotate(1deg);
+        box-shadow: 
+            0 0 23px rgba(255, 255, 255, 0.92),
+            0 0 46px rgba(255, 215, 0, 0.82),
+            0 0 66px rgba(255, 140, 0, 0.62),
+            0 0 86px rgba(255, 69, 0, 0.42);
+        opacity: 0.97;
+    }
+}
+
+/* 主光晕脉动动画 */
+@keyframes glow-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* 第二层光晕脉动动画 */
+@keyframes glow-pulse-secondary {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.8;
+    }
+}
+
+/* 第三层光晕脉动动画 */
+@keyframes glow-pulse-tertiary {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0.6;
+    }
+}
+
+/* 应用动画 */
+.flame {
+    animation: flicker 0.8s infinite ease-in-out;
+}
+
+.flame-glow {
+    animation: glow-pulse 2s infinite ease-in-out;
+}
+
+/* 火焰吹动效果 */
+.flame.blow {
+    animation: blow-effect 0.5s ease-in-out;
+}
+
+/* 吹动效果动画 */
+@keyframes blow-effect {
+    0% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 40px rgba(255, 215, 0, 0.8),
+            0 0 60px rgba(255, 140, 0, 0.6),
+            0 0 80px rgba(255, 69, 0, 0.4);
+    }
+    50% {
+        transform: scale(1.4) rotate(8deg);
+        box-shadow: 
+            0 0 30px rgba(255, 255, 255, 1),
+            0 0 60px rgba(255, 215, 0, 0.9),
+            0 0 90px rgba(255, 140, 0, 0.7),
+            0 0 120px rgba(255, 69, 0, 0.5);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 40px rgba(255, 215, 0, 0.8),
+            0 0 60px rgba(255, 140, 0, 0.6),
+            0 0 80px rgba(255, 69, 0, 0.4);
+    }
+}
+
+/* 吹动时光晕效果 */
+.flame-glow.blow {
+    animation: blow-glow-effect 0.5s ease-in-out;
+}
+
+@keyframes blow-glow-effect {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.5) translateX(20px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+/* 火焰熄灭状态 */
+.flame.extinguished {
+    animation: extinguish-effect 0.8s ease-out forwards;
+}
+
+/* 熄灭效果动画 */
+@keyframes extinguish-effect {
+    0% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.9),
+            0 0 40px rgba(255, 215, 0, 0.8),
+            0 0 60px rgba(255, 140, 0, 0.6),
+            0 0 80px rgba(255, 69, 0, 0.4);
+        opacity: 1;
+    }
+    30% {
+        transform: scale(0.8) rotate(2deg);
+        box-shadow: 
+            0 0 15px rgba(255, 255, 255, 0.7),
+            0 0 30px rgba(255, 215, 0, 0.6),
+            0 0 45px rgba(255, 140, 0, 0.4),
+            0 0 60px rgba(255, 69, 0, 0.2);
+        opacity: 0.8;
+    }
+    60% {
+        transform: scale(0.5) rotate(-2deg);
+        box-shadow: 
+            0 0 10px rgba(255, 255, 255, 0.5),
+            0 0 20px rgba(255, 215, 0, 0.4),
+            0 0 30px rgba(255, 140, 0, 0.2),
+            0 0 40px rgba(255, 69, 0, 0.1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(0) rotate(0deg);
+        box-shadow: none;
+        opacity: 0;
+    }
+}
+
+/* 火焰光晕熄灭状态 */
+.flame-glow.extinguished {
+    animation: extinguish-glow-effect 0.8s ease-out forwards;
+}
+
+/* 光晕熄灭效果动画 */
+@keyframes extinguish-glow-effect {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* 烛芯熄灭状态 */
+.candle-wick.extinguished {
+    background-color: #555;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .candle-body {
+        width: 100px;
+        height: 240px;
+    }
+    
+    .flame {
+        width: 25px;
+        height: 50px;
+    }
+    
+    .flame-glow {
+        width: 70px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .candle-body {
+        width: 80px;
+        height: 200px;
+    }
+    
+    .flame {
+        width: 20px;
+        height: 40px;
+    }
+    
+    .flame-glow {
+        width: 60px;
+        height: 80px;
+    }
+}
