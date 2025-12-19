@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/tailor997/web_pages#readme",
   "dependencies": {
+    "@mmt817/pixel-ui": "^1.6.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@vitejs/plugin-vue": "^6.0.3",
     "autoprefixer": "^10.4.23",

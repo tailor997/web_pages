@@ -1,195 +1,196 @@
 <template>
-  <div class="h-screen overflow-hidden bg-[#121212] py-3 px-2 md:py-8 md:px-4">
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-6 fade-in">
+  <div class="min-h-screen bg-[#f5f5f5] py-6 px-4 md:py-10 md:px-6">
+    <div class="app-shell stack-gap w-full md:w-3/5 mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-6 fade-in">
       <!-- 标题 -->
-      <h1 class="text-xl md:text-3xl font-bold text-center text-gray-800 mb-4 md:mb-8">时间计算与可视化</h1>
+      <h1 class="text-xl md:text-3xl font-bold text-center text-gray-800 mb-4 md:mb-8">准时约</h1>
 
       <!-- 控制面板 -->
-      <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6 mb-4 md:mb-8">
-        <!-- 时间参数控制 -->
-        <div class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 mt-6 md:mt-8 mb-8 md:mb-12 w-full">
+        <!-- 计算选择区域 -->
+        <div class="w-full h-full flex flex-col space-y-2 md:space-y-4 mx-auto">
           <!-- 起始时间 -->
+          <!-- 间距：确保卡片与相邻元素有8-16px垂直间隔 -->
           <div 
-            class="p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-sky-50"
-            :class="showRoller.startTime ? 'ring-2 ring-sky-400 shadow-md' : ''"
+            class="card-gap p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-sky-50"
             @click="onCardClick('startTime')"
           >
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-lg font-semibold text-gray-700">起始时间</h3>
-              <div class="flex items-center gap-2">
-                <button 
-                  class="px-2 py-1 rounded-lg text-xs font-medium transition bg-sky-100 text-sky-700 hover:bg-sky-200"
-                  :class="calculateTarget === 'startTime' ? 'ring-1 ring-sky-500' : ''"
-                  @click.stop="calculateTarget = 'startTime'; closeAllRollers()"
-                >计算</button>
+              <div class="flex items-center gap-4">
+                <PxButton 
+                  class="calc-btn"
+                  :type="calculateTarget === 'startTime' ? 'success' : 'primary'"
+                  size="default"
+                  @click.stop="calculateTarget = 'startTime'"
+                >计算</PxButton>
               </div>
             </div>
+            <!-- <p class="text-gray-700 font-mono text-lg mb-2">{{ startText }}</p> -->
             
-            <div class="flex items-center gap-2 mb-2">
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'startTime' }"
+            <div class="space-y-4">
+              <PxDropdown
+                :items="hoursItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { startTime.hour = Number(cmd); calculateTime() }"
               >
-                {{ startTime.hour.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">:</span>
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'startTime' }"
+                <template #default>{{ startTime.hour.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
+              <PxDropdown
+                :items="minutesItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { startTime.minute = Number(cmd); calculateTime() }"
               >
-                {{ startTime.minute.toString().padStart(2, '0') }}
-              </div>
+                <template #default>{{ startTime.minute.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
             </div>
-            
-            <!-- 滚轮选择器，条件显示 -->
-            <!-- 滚轮改为模态弹窗显示 -->
           </div>
 
           <!-- 预约时间时长 -->
+          <!-- 间距：确保卡片与相邻元素有8-16px垂直间隔 -->
           <div 
-            class="p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-violet-50"
-            :class="showRoller.appointmentDuration ? 'ring-2 ring-violet-400 shadow-md' : ''"
+            class="card-gap p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-violet-50"
             @click="onCardClick('appointmentDuration')"
           >
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-lg font-semibold text-gray-700">预约时间时长</h3>
-              <div class="flex items-center gap-2">
-                <button 
-                  class="px-2 py-1 rounded-lg text-xs font-medium transition bg-violet-100 text-violet-700 hover:bg-violet-200"
-                  :class="calculateTarget === 'appointmentDuration' ? 'ring-1 ring-violet-500' : ''"
-                  @click.stop="calculateTarget = 'appointmentDuration'; closeAllRollers()"
-                >计算</button>
+              <div class="flex items-center gap-4">
+                <PxButton 
+                  class="calc-btn"
+                  :type="calculateTarget === 'appointmentDuration' ? 'success' : 'primary'"
+                  size="default"
+                  @click.stop="calculateTarget = 'appointmentDuration'"
+                >计算</PxButton>
               </div>
             </div>
             
-            <div class="flex items-center gap-2 mb-2">
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'appointmentDuration' }"
+            <div class="space-y-4">
+              <PxDropdown
+                :items="hoursItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { appointmentDuration.hour = Number(cmd); calculateTime() }"
               >
-                {{ appointmentDuration.hour.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">时</span>
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'appointmentDuration' }"
+                <template #default>{{ appointmentDuration.hour.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
+              <PxDropdown
+                :items="minutesItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { appointmentDuration.minute = Number(cmd); calculateTime() }"
               >
-                {{ appointmentDuration.minute.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">分</span>
+                <template #default>{{ appointmentDuration.minute.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
             </div>
-            
-            <!-- 滚轮选择器，条件显示 -->
-            <!-- 滚轮改为模态弹窗显示 -->
           </div>
 
           <!-- 行动时长 -->
+          <!-- 间距：确保卡片与相邻元素有8-16px垂直间隔 -->
           <div 
-            class="p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-rose-50"
-            :class="showRoller.actionDuration ? 'ring-2 ring-rose-400 shadow-md' : ''"
+            class="card-gap p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-rose-50"
             @click="onCardClick('actionDuration')"
           >
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-lg font-semibold text-gray-700">行动时长</h3>
-              <div class="flex items-center gap-2">
-                <button 
-                  class="px-2 py-1 rounded-lg text-xs font-medium transition bg-rose-100 text-rose-700 hover:bg-rose-200"
-                  :class="calculateTarget === 'actionDuration' ? 'ring-1 ring-rose-500' : ''"
-                  @click.stop="calculateTarget = 'actionDuration'; closeAllRollers()"
-                >计算</button>
+              <div class="flex items-center gap-4">
+                <PxButton 
+                  class="calc-btn"
+                  :type="calculateTarget === 'actionDuration' ? 'success' : 'primary'"
+                  size="default"
+                  @click.stop="calculateTarget = 'actionDuration'"
+                >计算</PxButton>
               </div>
             </div>
             
-            <div class="flex items-center gap-2 mb-2">
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'actionDuration' }"
+            <div class="space-y-4">
+              <PxDropdown
+                :items="hoursItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { actionDuration.hour = Number(cmd); calculateTime() }"
               >
-                {{ actionDuration.hour.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">时</span>
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'actionDuration' }"
+                <template #default>{{ actionDuration.hour.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
+              <PxDropdown
+                :items="minutesItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { actionDuration.minute = Number(cmd); calculateTime() }"
               >
-                {{ actionDuration.minute.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">分</span>
+                <template #default>{{ actionDuration.minute.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
             </div>
-            
-            <!-- 滚轮选择器，条件显示 -->
-            <!-- 滚轮改为模态弹窗显示 -->
           </div>
 
           <!-- 结束时间 -->
+          <!-- 间距：确保卡片与相邻元素有8-16px垂直间隔 -->
           <div 
-            class="p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-emerald-50"
-            :class="showRoller.endTime ? 'ring-2 ring-emerald-400 shadow-md' : ''"
+            class="card-gap p-3 rounded-xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-white to-emerald-50"
             @click="onCardClick('endTime')"
           >
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-lg font-semibold text-gray-700">结束时间</h3>
-              <div class="flex items-center gap-2">
-                <button 
-                  class="px-2 py-1 rounded-lg text-xs font-medium transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                  :class="calculateTarget === 'endTime' ? 'ring-1 ring-emerald-500' : ''"
-                  @click.stop="calculateTarget = 'endTime'; closeAllRollers()"
-                >计算</button>
+              <div class="flex items-center gap-4">
+                <PxButton 
+                  class="calc-btn"
+                  :type="calculateTarget === 'endTime' ? 'success' : 'primary'"
+                  size="default"
+                  @click.stop="calculateTarget = 'endTime'"
+                >计算</PxButton>
               </div>
             </div>
+            <!-- <PxText type="primary" class="mb-2">{{ startText }}</PxText> -->
             
-            <div class="flex items-center gap-2 mb-2">
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'endTime' }"
+            <div class="space-y-4">
+              <PxDropdown
+                :items="hoursItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { endTime.hour = Number(cmd); calculateTime() }"
               >
-                {{ endTime.hour.toString().padStart(2, '0') }}
-              </div>
-              <span class="text-gray-500 text-sm">:</span>
-              <div 
-                class="time-block" 
-                :class="{ 'block-disabled': calculateTarget === 'endTime' }"
+                <template #default>{{ endTime.hour.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
+              <PxDropdown
+                :items="minutesItems"
+                trigger="click"
+                effect="dark"
+                :hideOnClick="true"
+                :splitButton="true"
+                @command="cmd => { endTime.minute = Number(cmd); calculateTime() }"
               >
-                {{ endTime.minute.toString().padStart(2, '0') }}
-              </div>
+                <template #default>{{ endTime.minute.toString().padStart(2,'0') }}</template>
+              </PxDropdown>
             </div>
-            
-            <!-- 滚轮选择器，条件显示 -->
-            <!-- 滚轮改为模态弹窗显示 -->
           </div>
         </div>
-
-        <!-- 可视化时间轴 -->
-        <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold text-gray-700 mb-4">时间轴可视化</h3>
-          <time-line 
-            :start-time="startTime"
-            :end-time="endTime"
-            :appointment-duration="appointmentDuration"
-            :action-duration="actionDuration"
-            :time-format="timeFormat"
-          />
-        </div>
+        <!-- 右侧内容区域（预留） -->
+        <div class="flex-1 h-full mx-auto max-w-xl"></div>
       </div>
 
-      <!-- 功能按钮区 -->
-      <div class="fixed bottom-0 left-0 right-0 z-10">
-        <div class="mx-auto max-w-4xl mb-2 px-2">
-          <div class="flex flex-wrap justify-between items-center gap-3 md:gap-4 bg-white/95 backdrop-blur p-3 md:p-4 rounded-xl shadow-lg border border-gray-100">
-            <div class="flex items-center gap-4">
-              <button 
-                @click="resetTime" 
-                class="px-6 py-2 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5"
-              >
-                重置
-              </button>
-            </div>
-            <div class="text-right">
-              <p class="text-xs text-gray-500">当前系统时间</p>
-              <p class="text-xl font-semibold text-blue-600">{{ currentSystemTime }}</p>
-            </div>
-          </div>
-        </div>
+      <!-- 底部按钮区 -->
+      <div class="mt-12 py-4 flex justify-center">
+        <PxButton type="primary" size="large" @click="resetTime">重置</PxButton>
+      </div>
+
+      <!-- 项目名与说明 -->
+      <div class="mx-auto text-center my-6 md:my-8">
+        <div class="inline-block px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-100 to-indigo-100 text-indigo-700 font-bold text-3xl md:text-4xl tracking-widest"></div>
+        <p class="mt-2 text-gray-600">点击计算后，选中项将基于其余三项自动计算</p>
       </div>
 
       <!-- 状态信息 -->
@@ -200,127 +201,23 @@
           <li>• 点击时间显示可展开/收起滚轮选择器</li>
           <li>• 滚动滚轮可以快速调整时间值</li>
           <li>• 时间轴清晰展示各时间节点的关系</li>
-          <li>• 支持12/24小时制切换</li>
+          <li>• 支持模态滚轮弹窗，遮罩或ESC关闭</li>
         </ul>
       </div>
     </div>
   </div>
-  <div v-if="Object.values(showRoller).some(Boolean)" class="roller-overlay">
-    <div class="roller-mask" @click="closeAllRollers"></div>
-    <div class="roller-sheet">
-      <div class="max-w-4xl mx-auto p-4 flex items-start gap-4">
-        <div 
-          class="ml-auto px-3 py-1 rounded-lg bg-[#2A2A2A] text-gray-300 hover:bg-[#333] cursor-pointer select-none transition"
-          role="button"
-          tabindex="0"
-          @click="closeAllRollers"
-          @keydown.enter="closeAllRollers"
-          @keydown.space.prevent="closeAllRollers"
-        >关闭</div>
-        <div v-if="showRoller.startTime" class="flex items-center gap-3 w-full">
-          <time-roller 
-            v-model="startTime.hour" 
-            :min="0" 
-            :max="23" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'startTime'"
-          />
-          <div class="text-2xl font-semibold text-gray-400">:</div>
-          <time-roller 
-            v-model="startTime.minute" 
-            :min="0" 
-            :max="59" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'startTime'"
-          />
-        </div>
-        <div v-if="showRoller.appointmentDuration" class="flex items-center gap-3 w-full">
-          <time-roller 
-            v-model="appointmentDuration.hour" 
-            :min="0" 
-            :max="23" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'appointmentDuration'"
-          />
-          <div class="text-xl font-semibold text-gray-400">时</div>
-          <time-roller 
-            v-model="appointmentDuration.minute" 
-            :min="0" 
-            :max="59" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'appointmentDuration'"
-          />
-          <div class="text-xl font-semibold text-gray-400">分</div>
-        </div>
-        <div v-if="showRoller.actionDuration" class="flex items-center gap-3 w-full">
-          <time-roller 
-            v-model="actionDuration.hour" 
-            :min="0" 
-            :max="23" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'actionDuration'"
-          />
-          <div class="text-xl font-semibold text-gray-400">时</div>
-          <time-roller 
-            v-model="actionDuration.minute" 
-            :min="0" 
-            :max="59" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'actionDuration'"
-          />
-          <div class="text-xl font-semibold text-gray-400">分</div>
-        </div>
-        <div v-if="showRoller.endTime" class="flex items-center gap-3 w-full">
-          <time-roller 
-            v-model="endTime.hour" 
-            :min="0" 
-            :max="23" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'endTime'"
-          />
-          <div class="text-2xl font-semibold text-gray-400">:</div>
-          <time-roller 
-            v-model="endTime.minute" 
-            :min="0" 
-            :max="59" 
-            :step="1"
-            @update:model-value="calculateTime"
-            :disabled="calculateTarget === 'endTime'"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
+  
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import TimeRoller from './components/TimeRoller.vue'
-import TimeLine from './components/TimeLine.vue'
+import { PxDropdown, PxText } from '@mmt817/pixel-ui/dist/es/index.js'
 
-// 时间格式
-const timeFormat = ref('24h')
-
-// 当前系统时间
-const currentSystemTime = ref('')
 
 // 计算目标选择（默认计算结束时间）
 const calculateTarget = ref('endTime') // 可选值：startTime, appointmentDuration, actionDuration, endTime
 
-// 滚轮显示状态
-const showRoller = ref({
-  startTime: false,
-  appointmentDuration: false,
-  actionDuration: false,
-  endTime: false
-})
+// 下拉无需全局弹层状态
 
 // 起始时间
 const startTime = ref({
@@ -346,53 +243,57 @@ const endTime = ref({
   minute: 0
 })
 
-// 计算结束时间
+// 下拉项
+const hoursItems = computed(() => Array.from({ length: 24 }, (_, i) => ({ command: i, label: i.toString().padStart(2, '0') })))
+const minutesItems = computed(() => Array.from({ length: 60 }, (_, i) => ({ command: i, label: i.toString().padStart(2, '0') })))
+
+// 计算结束时间（分钟级）
 const calculateEndTime = () => {
   const startMinutes = startTime.value.hour * 60 + startTime.value.minute
   const appointmentMinutes = appointmentDuration.value.hour * 60 + appointmentDuration.value.minute
   const actionMinutes = actionDuration.value.hour * 60 + actionDuration.value.minute
   
   let totalMinutes = startMinutes + appointmentMinutes + actionMinutes
-  totalMinutes = totalMinutes % (24 * 60) // 处理超过24小时的情况
+  totalMinutes = totalMinutes % (24 * 60)
   
   endTime.value.hour = Math.floor(totalMinutes / 60)
   endTime.value.minute = totalMinutes % 60
 }
 
-// 计算行动时长
+// 计算行动时长（分钟级）
 const calculateActionDuration = () => {
   const startMinutes = startTime.value.hour * 60 + startTime.value.minute
   const endMinutes = endTime.value.hour * 60 + endTime.value.minute
   const appointmentMinutes = appointmentDuration.value.hour * 60 + appointmentDuration.value.minute
   
   let actionMinutes = endMinutes - startMinutes - appointmentMinutes
-  if (actionMinutes < 0) actionMinutes += 24 * 60 // 处理跨天情况
+  if (actionMinutes < 0) actionMinutes += 24 * 60
   
   actionDuration.value.hour = Math.floor(actionMinutes / 60)
   actionDuration.value.minute = actionMinutes % 60
 }
 
-// 计算预约时长
+// 计算预约时长（分钟级）
 const calculateAppointmentDuration = () => {
   const startMinutes = startTime.value.hour * 60 + startTime.value.minute
   const endMinutes = endTime.value.hour * 60 + endTime.value.minute
   const actionMinutes = actionDuration.value.hour * 60 + actionDuration.value.minute
   
   let appointmentMinutes = endMinutes - startMinutes - actionMinutes
-  if (appointmentMinutes < 0) appointmentMinutes += 24 * 60 // 处理跨天情况
+  if (appointmentMinutes < 0) appointmentMinutes += 24 * 60
   
   appointmentDuration.value.hour = Math.floor(appointmentMinutes / 60)
   appointmentDuration.value.minute = appointmentMinutes % 60
 }
 
-// 计算起始时间
+// 计算起始时间（分钟级）
 const calculateStartTime = () => {
   const endMinutes = endTime.value.hour * 60 + endTime.value.minute
   const appointmentMinutes = appointmentDuration.value.hour * 60 + appointmentDuration.value.minute
   const actionMinutes = actionDuration.value.hour * 60 + actionDuration.value.minute
   
   let startMinutes = endMinutes - appointmentMinutes - actionMinutes
-  if (startMinutes < 0) startMinutes += 24 * 60 // 处理跨天情况
+  if (startMinutes < 0) startMinutes += 24 * 60
   
   startTime.value.hour = Math.floor(startMinutes / 60)
   startTime.value.minute = startMinutes % 60
@@ -436,61 +337,35 @@ const resetTime = () => {
   calculateEndTime()
 }
 
-// 切换时间格式
-const toggleTimeFormat = () => {
-  timeFormat.value = timeFormat.value === '24h' ? '12h' : '24h'
-}
 
-// 切换滚轮显示状态
-const toggleRoller = (target) => {
-  // 只有非计算目标才能显示滚轮
-  if (calculateTarget.value !== target) {
-    showRoller.value[target] = !showRoller.value[target]
-  }
-}
+// 卡片点击不再触发弹层，仅用于焦点管理
+const onCardClick = (target) => {}
 
-const onTimeBlockClick = (target) => {
-  if (calculateTarget.value !== target) {
-    showRoller.value[target] = !showRoller.value[target]
-  }
-}
-
-const onCardClick = (target) => {
-  if (calculateTarget.value === target) return
-  closeAllRollers()
-  showRoller.value[target] = true
-}
-// 关闭所有滚轮
-const closeAllRollers = () => {
-  for (const key in showRoller.value) {
-    showRoller.value[key] = false
-  }
-}
-
-// 更新当前系统时间
-const updateSystemTime = () => {
-  const now = new Date()
-  const hours = now.getHours().toString().padStart(2, '0')
-  const minutes = now.getMinutes().toString().padStart(2, '0')
-  const seconds = now.getSeconds().toString().padStart(2, '0')
-  currentSystemTime.value = `${hours}:${minutes}:${seconds}`
-}
 
 // 监听时间变化，实现自动计算
-watch([startTime, appointmentDuration, actionDuration], calculateEndTime)
+watch([startTime, appointmentDuration, actionDuration], calculateEndTime, { deep: true })
 
 // 组件挂载时初始化
 onMounted(() => {
-  updateSystemTime()
   calculateEndTime()
-  // 每秒更新系统时间
-  setInterval(updateSystemTime, 1000)
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAllRollers()
-  })
 })
+
+// HH:mm 显示
+const formatHHmm = (h, m) => h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0')
+const startText = computed(() => formatHHmm(startTime.value.hour, startTime.value.minute))
+const endText = computed(() => formatHHmm(endTime.value.hour, endTime.value.minute))
 </script>
 
 <style scoped>
-/* 组件特定样式 */
+/* 卡片间距：确保四个时间选择卡片与相邻元素之间保持一致的垂直间距（移动端8px，桌面端16px） */
+.card-gap {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+@media (min-width: 768px) {
+  .card-gap {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+}
 </style>
