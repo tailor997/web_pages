@@ -1,0 +1,371 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #121212;
+  color: #e5e7eb;
+}
+
+:root {
+  --color-bg: #121212;
+  --color-card: #1E1E1E;
+  --color-surface: #2A2A2A;
+  --color-text: #FFFFFF;
+  --color-text-muted: #BDBDBD;
+  --color-primary: #2196F3;
+  --color-accent: #FF9800;
+  --color-past: #757575;
+  --color-current: #4CAF50;
+  --color-future: #9C27B0;
+  --color-overdue: #F44336;
+  --radius: 8px;
+}
+
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.timeline-container,
+.roller-container,
+.time-block {
+  border-radius: var(--radius);
+}
+
+.shadow-md { box-shadow: 0px 2px 4px rgba(0,0,0,0.3); }
+.shadow-lg { box-shadow: 0px 6px 12px rgba(0,0,0,0.35); }
+.shadow-xl { box-shadow: 0px 8px 16px rgba(0,0,0,0.4); }
+
+/* 紧凑时间块 */
+.time-block {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #2f3640;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.time-block:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.35);
+}
+
+.time-block:active {
+  transform: scale(0.97);
+}
+
+.block-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 模态滚轮弹窗 */
+.roller-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+.roller-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+.roller-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60vh;
+  background: var(--color-card);
+  border-top: 1px solid #2f3640;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  box-shadow: 0 -8px 16px rgba(0,0,0,0.4);
+  transform: translateY(100%);
+  animation: sheetIn 300ms ease-out forwards;
+}
+@keyframes sheetIn {
+  to { transform: translateY(0); }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 时间滚轮选择器样式 */
+.roller-container {
+  position: relative;
+  overflow: hidden;
+  height: 120px;
+  width: 80px;
+  border: 1px solid #2f3640;
+  background-color: var(--color-card);
+  transition: all 0.2s ease;
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+  .roller-container {
+    width: 65px;
+    height: 100px;
+  }
+  
+  .roller-item {
+    height: 33px;
+    font-size: 16px;
+  }
+  
+  .roller-item.active {
+    font-size: 20px;
+  }
+  
+  .roller-indicator {
+    height: 33px;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-container {
+    height: 100px;
+    padding: 16px 8px;
+  }
+  
+  .timeline-bar {
+    left: 8px;
+    right: 8px;
+  }
+  
+  .timeline-label {
+    font-size: 11px;
+    padding: 2px 6px;
+    top: calc(50% + 12px);
+  }
+  
+  .timeline-marker {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.roller-wheel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.roller-item {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  color: #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.roller-item.active {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.roller-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent 30%, transparent 70%, rgba(255,255,255,0.9));
+  z-index: 10;
+}
+
+.roller-indicator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 40px;
+  transform: translateY(-50%);
+  border-top: 2px solid #3b82f6;
+  border-bottom: 2px solid #3b82f6;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 时间轴样式 */
+.timeline-container {
+  position: relative;
+  height: 120px;
+  background-color: var(--color-card);
+  border-radius: var(--radius);
+  padding: 30px 20px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+  overflow: visible;
+}
+
+.timeline-bar {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  right: 20px;
+  height: 10px;
+  background-color: #2a2a2a;
+  border-radius: 5px;
+  transform: translateY(-50%);
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.35);
+  border: 3px solid #121212;
+  z-index: 10;
+}
+
+.timeline-marker:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4);
+}
+
+.timeline-label {
+  position: absolute;
+  top: calc(50% + 16px);
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  background-color: var(--color-card);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-marker:hover + .timeline-label {
+  background-color: #263238;
+  color: #e0f7fa;
+  transform: translateX(-50%) scale(1.05);
+}
+
+.timeline-label-start { color: var(--color-past); }
+.timeline-label-current { color: var(--color-current); }
+.timeline-label-future { color: var(--color-future); }
+.timeline-label-overdue { color: var(--color-overdue); }
+
+.timeline-period {
+  position: absolute;
+  top: 50%;
+  height: 10px;
+  border-radius: 5px;
+  transform: translateY(-50%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  z-index: 5;
+}
+
+.timeline-period:hover {
+  height: 14px;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* 优化时间刻度样式 */
+.timeline-container > div:nth-last-child(n+3) {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 4px;
+  background-color: #546e7a;
+}
+
+.timeline-container > div:nth-last-child(n+3) > div {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  background-color: var(--color-card);
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* 为时间段添加渐变效果 */
+.timeline-period:first-of-type {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.6), rgba(76, 175, 80, 0.3));
+}
+
+.timeline-period:last-of-type {
+  background: linear-gradient(90deg, rgba(156, 39, 176, 0.3), rgba(156, 39, 176, 0.6));
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

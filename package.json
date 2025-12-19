@@ -1,0 +1,32 @@
+{
+  "name": "web_book_time_calc",
+  "version": "1.0.0",
+  "description": "web pages for deploy",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tailor997/web_pages.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tailor997/web_pages/issues"
+  },
+  "homepage": "https://github.com/tailor997/web_pages#readme",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "vite": "^7.3.0",
+    "vue": "^3.5.26"
+  }
+}
