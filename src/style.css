@@ -40,6 +40,24 @@ body {
   font-size: 14px;
 }
 
+/* PaintWorklet Fallback: 当浏览器不支持 CSS Houdini paint() 时，确保组件背景不透明 */
+@supports not (background-image: paint(pixelbox)) {
+  .px-button {
+    background-color: var(--px-bg-color, var(--px-color-primary)) !important;
+    border-color: var(--px-border-color, var(--px-color-base)) !important;
+  }
+  .px-dropdown__item {
+    background-color: var(--px-bg-color, var(--px-color-white)) !important;
+  }
+  .px-tooltip,
+  .px-popconfirm,
+  .px-card,
+  .px-collapse__item,
+  .px-tag {
+    background-color: var(--px-bg-color, var(--px-color-white)) !important;
+  }
+}
+
 /* 全局栈式间距：为相邻块元素提供统一的8-16px间隔，保持视觉舒适 */
 .stack-gap > * + * {
   margin-top: 8px;
