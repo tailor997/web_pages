@@ -1,0 +1,18 @@
+# LVGL Font Converter Parameters Example
+# This file demonstrates how to configure Range and Symbols for LVGL font conversion
+
+# Unicode Ranges (hexadecimal format)
+# Format: comma-separated ranges or single values
+range: 0x20-0x7F, 0x410-0x44F, 0x451
+
+# Symbols to include
+# Multi-line symbols are supported without escaping newlines
+symbols: |
+  Hello World!
+  你好，世界！
+  こんにちは世界！
+  Привет, мир!
+  العربية
+  🌍✨
+  0123456789
+  !@#$%^&*()_+-=[]{}|;:,.<>?
