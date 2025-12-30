@@ -223,7 +223,26 @@ export default {
       return this.translations[this.language];
     }
   },
+  mounted() {
+    // Set initial page title based on current language
+    this.updatePageTitle();
+  },
+  watch: {
+    // Update page title when language changes
+    language() {
+      this.updatePageTitle();
+    }
+  },
   methods: {
+    // Update page title based on current language
+    updatePageTitle() {
+      const titles = {
+        zh: 'LVGL字体转换工具',
+        en: 'LVGL Font Converter'
+      };
+      document.title = titles[this.language];
+    },
+    
     // Toggle language between Chinese and English
     toggleLanguage() {
       this.language = this.language === 'zh' ? 'en' : 'zh';
@@ -234,8 +253,9 @@ export default {
       if (file) {
         this.fontFile = file;
         this.fontFileName = file.name;
-        // Set default font name based on file name
-        this.fontName = file.name.replace(/\.[^/.]+$/, '');
+        // Set default font name based on file name with lv_font_ prefix
+        const baseName = file.name.replace(/\.[^/.]+$/, '');
+        this.fontName = `lv_font_${baseName}`;
       }
     },
     
@@ -312,7 +332,9 @@ export default {
           this.logger.info(`Processing font size: ${size}px`);
           
           // Generate options for lv_font_conv
-          const outputFileName = `out.c`;
+          // Use the final font name as the output filename to ensure variable name matches
+          const customFontName = `${this.fontName}_${size}`;
+          const outputFileName = `${customFontName}.c`;
           const options = {
             font: [
               {
@@ -329,7 +351,8 @@ export default {
             lv_fallback: this.fallback || undefined,
             range: [],
             symbols: '',
-            output: outputFileName
+            output: outputFileName,
+            lv_font_name: customFontName
           };
           
           // Add range and symbols if provided
